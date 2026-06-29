@@ -23,9 +23,13 @@ function sb() {
 
 async function currentGuest(): Promise<GuestProfile | null> {
   const supabase = sb();
+  // getSession reads from local storage (and refreshes if needed) without the
+  // extra network round-trip getUser does — more reliable on flaky phone
+  // networks, which is the whole point of "remember me on this device".
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return null;
   const { data } = await supabase
     .from("guests")
@@ -59,8 +63,15 @@ export const supabaseClient: DataClient = {
       return { ok: false, reason: "bad-code" };
     }
     const supabase = sb();
-    const { error: anonErr } = await supabase.auth.signInAnonymously();
-    if (anonErr) return { ok: false, reason: "unknown" };
+    // Reuse an existing session if there is one, so re-tapping your name keeps
+    // the same auth user instead of minting a new anonymous one each time.
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      const { error: anonErr } = await supabase.auth.signInAnonymously();
+      if (anonErr) return { ok: false, reason: "unknown" };
+    }
     const { error } = await supabase.rpc("link_me", { p_guest_id: guestId });
     if (error)
       return {

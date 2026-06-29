@@ -28,6 +28,7 @@ App complete, Supabase backend wired and verified end to end, and deployed to Ve
 - **`0003_harden` migration** cleared the security-definer-view advisor (leaderboard view is now `security_invoker`) and locked `link_me` to authenticated users.
 - **Bigger, scroll-collapsing imagery.** The game hero is taller and collapses to a slim sticky band on scroll; hub image enlarged; château made responsive.
 - **Node engine pinned** to `22.x` for Vercel.
+- **Sign-in didn't stick, and re-sign-in failed.** The session was stored in a JS-set cookie, which iOS Safari evicts (and standalone PWAs isolate), so phones forgot the guest; then tapping the name again minted a new anonymous user that `link_me` rejected with "someone's already playing as this guest." Fixed: the browser client now persists to localStorage (a cached singleton), sign-in reuses an existing session instead of minting a new one, the boot check uses `getSession` (no network round-trip), and migration `0004_link_me_rebind` rebinds the guest to whoever signs in (identity is honor-system). Verified: a session survives cookie loss, and a guest bound to an orphaned session signs straight back in.
 
 ## Not done
 

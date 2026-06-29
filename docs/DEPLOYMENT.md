@@ -21,7 +21,7 @@ See `.env.example`. The essentials:
 
 ## One-time setup
 
-1. Create the Supabase project. Run `supabase/migrations/0001_init.sql`, then `0002_auth_link.sql`, then `0003_harden.sql` in the SQL editor. (`0003` makes the leaderboard view `security_invoker` and locks the `link_me` RPC to authenticated users, clearing the Supabase advisors.)
+1. Create the Supabase project. Run the migrations in `supabase/migrations/` in order: `0001_init.sql`, `0002_auth_link.sql`, `0003_harden.sql`, `0004_link_me_rebind.sql`. (`0003` makes the leaderboard view `security_invoker` and locks the `link_me` RPC to authenticated users; `0004` lets a returning guest reclaim their name after their device loses its session.)
 2. In Supabase **Auth → Providers**, enable **Anonymous sign-ins** (the name-pick flow relies on it). The MCP cannot toggle this; it is a manual dashboard step.
 3. Seed the guest list: `npm run seed:guests -- path/to/guests.csv` (see `supabase/seed/`).
 4. Deploy to Vercel from GitHub; add the env vars above, then redeploy so the build picks them up (see the mock-mode trap above). Point `wedding.cdbradley.com` at Vercel. Confirm `noindex` is live.
