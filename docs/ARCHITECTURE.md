@@ -9,7 +9,7 @@ A small, mobile-first PWA for a known, closed audience playing for one week. Opt
    phone    │  Next.js PWA (App Router) on Vercel      │
   ───────►  │   - guest sign-in (tap name, no email)   │
             │   - today's game + catch-up              │
-            │   - leaderboard (today / all-time)       │
+            │   - leaderboard (per-game / all-time)    │
             │   - share-card generation (client)       │
             └───────────────┬─────────────────────────┘
                             │  @supabase/ssr

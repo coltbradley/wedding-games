@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
 import { scoreResult } from "@/lib/scoring/score";
-import { todaysGame } from "@/lib/games/registry";
 import type { DataClient, GuestProfile } from "./types";
 
 /**
@@ -105,30 +104,29 @@ export const supabaseClient: DataClient = {
   async getLeaderboard() {
     const supabase = sb();
     const me = await currentGuest();
-    const today = todaysGame()?.id;
     const [{ data: guests }, { data: results }] = await Promise.all([
       supabase.from("guests").select("id, display_name"),
       supabase.from("game_results").select("guest_id, game_id, score"),
     ]);
     const byGuest = new Map<
       string,
-      { name: string; today: number; all: number }
+      { name: string; all: number; byGame: Record<string, number> }
     >();
     (guests ?? []).forEach((g) =>
-      byGuest.set(g.id, { name: g.display_name, today: 0, all: 0 }),
+      byGuest.set(g.id, { name: g.display_name, all: 0, byGame: {} }),
     );
     (results ?? []).forEach((r) => {
       const e = byGuest.get(r.guest_id);
       if (!e) return;
       e.all += r.score;
-      if (r.game_id === today) e.today += r.score;
+      e.byGame[r.game_id] = (e.byGame[r.game_id] ?? 0) + r.score;
     });
     return [...byGuest.entries()]
-      .filter(([, e]) => e.all > 0 || e.today > 0)
+      .filter(([, e]) => e.all > 0)
       .map(([id, e]) => ({
         name: e.name,
-        today: e.today,
         all: e.all,
+        byGame: e.byGame,
         me: id === me?.id,
       }));
   },

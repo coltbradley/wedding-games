@@ -37,6 +37,7 @@ export interface Strings {
   boardTitle: string;
   today: string;
   allTime: string;
+  boardGames: Record<string, string>;
   pts: string;
   you: string;
   noScoreYet: string;
@@ -107,6 +108,13 @@ export const STR: Record<Lang, Strings> = {
     boardTitle: "Leaderboard",
     today: "Today",
     allTime: "All-time",
+    boardGames: {
+      wordle: "Word",
+      trivia: "Trivia",
+      "two-truths": "Truths",
+      travel: "Travel",
+      connections: "Links",
+    },
     pts: "pts",
     you: "You",
     noScoreYet: "Play today’s game to join the board",
@@ -175,6 +183,13 @@ export const STR: Record<Lang, Strings> = {
     boardTitle: "Classement",
     today: "Aujourd’hui",
     allTime: "Au total",
+    boardGames: {
+      wordle: "Mot",
+      trivia: "Quiz",
+      "two-truths": "Vérités",
+      travel: "Voyage",
+      connections: "Liens",
+    },
     pts: "pts",
     you: "Toi",
     noScoreYet: "Joue au jeu du jour pour entrer au classement",

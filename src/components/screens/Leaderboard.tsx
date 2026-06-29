@@ -1,26 +1,29 @@
 "use client";
 
-import { useGame } from "../app/game";
+import { useGame, type Board } from "../app/game";
 import { useLang } from "../app/LangContext";
 import { TabBar } from "../app/chrome";
+import { GAME_ORDER } from "@/lib/games/view";
 import { C } from "@/lib/design/tokens";
 
 export function Leaderboard() {
   const g = useGame();
   const { t } = useLang();
-  const metric = g.s.board === "today" ? "today" : "all";
+  const board = g.s.board;
+
+  // Per-game boards are head-to-head on a single game (same scoring ceiling);
+  // all-time is the cumulative total across every game played.
+  const scoreFor = (p: (typeof g.s.leaders)[number]) =>
+    board === "all" ? p.all : (p.byGame[board] ?? 0);
 
   const leaders = g.s.leaders
-    .map((p) => ({ name: p.name, val: p[metric], me: p.me }))
+    .filter((p) => scoreFor(p) > 0)
+    .map((p) => ({ name: p.name, val: scoreFor(p), me: p.me }))
     .sort((a, b) => b.val - a.val)
     .map((p, i) => ({ ...p, rank: i + 1 }));
 
-  const pill = (on: boolean) => ({
-    bg: on ? C.wine : "transparent",
-    fg: on ? C.paper : C.wine,
-  });
-  const today = pill(g.s.board === "today");
-  const all = pill(g.s.board === "all");
+  const boards: Board[] = ["all", ...GAME_ORDER];
+  const boardLabel = (b: Board) => (b === "all" ? t.allTime : t.boardGames[b]);
 
   return (
     <div
@@ -57,42 +60,39 @@ export function Leaderboard() {
       </div>
 
       <div
+        className="board-chips"
         style={{
-          margin: "18px 24px 10px",
+          margin: "18px 0 10px",
+          padding: "0 24px",
           display: "flex",
-          background: "rgba(110,44,62,.07)",
-          borderRadius: 999,
-          padding: 4,
+          gap: 8,
+          overflowX: "auto",
+          scrollbarWidth: "none",
         }}
       >
-        <button
-          onClick={() => g.setBoard("today")}
-          style={{
-            flex: 1,
-            height: 40,
-            border: 0,
-            borderRadius: 999,
-            background: today.bg,
-            color: today.fg,
-            font: "600 14px var(--font-sans)",
-          }}
-        >
-          {t.today}
-        </button>
-        <button
-          onClick={() => g.setBoard("all")}
-          style={{
-            flex: 1,
-            height: 40,
-            border: 0,
-            borderRadius: 999,
-            background: all.bg,
-            color: all.fg,
-            font: "600 14px var(--font-sans)",
-          }}
-        >
-          {t.allTime}
-        </button>
+        {boards.map((b) => {
+          const on = board === b;
+          return (
+            <button
+              key={b}
+              onClick={() => g.setBoard(b)}
+              style={{
+                flex: "none",
+                height: 38,
+                padding: "0 17px",
+                border: 0,
+                borderRadius: 999,
+                background: on ? C.wine : "rgba(110,44,62,.07)",
+                color: on ? C.paper : C.wine,
+                font: "600 13px var(--font-sans)",
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+              }}
+            >
+              {boardLabel(b)}
+            </button>
+          );
+        })}
       </div>
 
       <div

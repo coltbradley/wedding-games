@@ -117,6 +117,10 @@ button:active {
 .rail {
   display: none;
 }
+/* horizontal leaderboard board-selector chips: scroll without a visible bar */
+.board-chips::-webkit-scrollbar {
+  display: none;
+}
 
 /* tablet & narrow desktop: framed card on the watercolour surface */
 @media (min-width: 760px) and (max-width: 1023.98px) {

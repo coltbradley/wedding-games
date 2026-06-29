@@ -1,22 +1,30 @@
 /**
- * Placeholder leaderboard data for the design build. Replaced by a Supabase
- * query against the `leaderboard` view once auth + scoring are wired
- * (see docs/ARCHITECTURE.md, docs/SCORING.md). Shape is intentionally close to
- * what the view returns so the swap is mechanical.
+ * Placeholder leaderboard data for local dev and demos (mock mode, no keys).
+ * Per-game scores on the real 0–1000 scale; `all` is derived as their sum.
+ * Not everyone has played every game, so the per-game boards have different
+ * leaders — which is the whole point of breaking the board out by game.
  */
 export interface LeaderEntry {
   name: string;
-  today: number;
-  all: number;
+  byGame: Partial<Record<string, number>>;
 }
 
 export const MOCK_LEADERBOARD: LeaderEntry[] = [
-  { name: "Valentine", today: 10, all: 60 },
-  { name: "Léa", today: 9, all: 51 },
-  { name: "Margaux", today: 8, all: 42 },
-  { name: "Amara", today: 8, all: 39 },
-  { name: "Thomas", today: 7, all: 48 },
-  { name: "Hugo", today: 6, all: 33 },
-  { name: "Colt", today: 5, all: 55 },
-  { name: "Sanjay", today: 4, all: 44 },
+  {
+    name: "Valentine",
+    byGame: { wordle: 920, trivia: 780, "two-truths": 640, travel: 800 },
+  },
+  {
+    name: "Léa",
+    byGame: { wordle: 700, trivia: 880, "two-truths": 720, travel: 540 },
+  },
+  { name: "Margaux", byGame: { wordle: 810, trivia: 600, travel: 900 } },
+  { name: "Amara", byGame: { wordle: 660, "two-truths": 870, travel: 720 } },
+  { name: "Thomas", byGame: { wordle: 990, trivia: 540, "two-truths": 600 } },
+  { name: "Hugo", byGame: { trivia: 720, travel: 680 } },
+  {
+    name: "Colt",
+    byGame: { wordle: 760, trivia: 820, "two-truths": 900, travel: 640 },
+  },
+  { name: "Sanjay", byGame: { wordle: 580, travel: 760 } },
 ];

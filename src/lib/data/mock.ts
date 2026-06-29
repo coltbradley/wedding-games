@@ -40,8 +40,8 @@ export const mockClient: DataClient = {
   async getLeaderboard() {
     return MOCK_LEADERBOARD.map((p) => ({
       name: p.name,
-      today: p.today,
-      all: p.all,
+      all: Object.values(p.byGame).reduce<number>((s, v) => s + (v ?? 0), 0),
+      byGame: p.byGame,
       me: session?.displayName === p.name,
     }));
   },

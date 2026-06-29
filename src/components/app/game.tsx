@@ -24,7 +24,7 @@ import type { GameId } from "@/lib/games/types";
 
 export type Screen =
   "join" | "namepick" | "hub" | GameId | "results" | "leaderboard";
-export type Board = "today" | "all";
+export type Board = "all" | GameId;
 type Done = Partial<Record<GameId, number | "X">>;
 
 interface ConnTile {
@@ -78,7 +78,7 @@ function initialState(): State {
     loading: false,
     copied: false,
     lastGame: "wordle",
-    board: "today",
+    board: "all",
     done: {},
     startedAt: null,
     roster: [],

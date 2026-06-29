@@ -1,4 +1,4 @@
-import type { RawResult } from "@/lib/games/types";
+import type { GameId, RawResult } from "@/lib/games/types";
 
 export type { RawResult };
 
@@ -15,11 +15,15 @@ export interface RosterEntry {
   name: string;
 }
 
-/** One leaderboard row (both metrics carried; the UI picks today vs all-time). */
+/**
+ * One leaderboard row. `all` is the cumulative total; `byGame` holds the score
+ * for each game the guest has played. The UI picks which board to show
+ * (all-time, or a single game).
+ */
 export interface LeaderRow {
   name: string;
-  today: number;
   all: number;
+  byGame: Partial<Record<GameId, number>>;
   me: boolean;
 }
 
