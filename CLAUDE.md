@@ -52,4 +52,6 @@ Colt's house style: sentence-case headings, no em dashes, no AI-filler vocabular
 
 ## Out of scope for v1
 
-Photos/albums, push notifications (WhatsApp is the channel), heavy compliance. The in-person finale Connections is offline and doesn't feed the leaderboard.
+Photos/albums, push notifications (WhatsApp is the channel), heavy compliance.
+
+There are two different Connections games, don't conflate them. The **online** Connections is day 5 in the app (`src/components/screens/Connections.tsx`); it is scored and feeds the leaderboard like the other four games. The **offline** Connections is a separate in-person finale played at the reception; it is not in the app and not on the leaderboard.
