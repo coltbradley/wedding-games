@@ -5,7 +5,7 @@ Short-lived event app. Goal: stand it up cheaply, keep it boring, and be certain
 ## Environments
 
 - **Local:** `npm run dev`, pointed at a dev Supabase project.
-- **Production:** Vercel, pointed at a prod Supabase project. One custom domain (e.g. `play.<wedding-domain>`).
+- **Production:** Vercel, pointed at a prod Supabase project. Domain: **`wedding.graphite.productions`**. OTP email sends from an authenticated subdomain on the same root (e.g. `mail.wedding.graphite.productions`).
 
 Keep dev and prod on **separate Supabase projects** so test data never pollutes the real leaderboard.
 
@@ -22,7 +22,7 @@ See `.env.example` for the full list. The essentials:
 ## One-time setup
 
 1. Create the prod Supabase project. Run `supabase/migrations/0001_init.sql`.
-2. Configure custom SMTP in Supabase Auth (Resend/Postmark) on the authenticated sending subdomain. Set SPF, DKIM, DMARC DNS records.
+2. Configure custom SMTP in Supabase Auth (Resend/Postmark) on the authenticated sending subdomain (`mail.wedding.graphite.productions`). Set SPF, DKIM, DMARC DNS records.
 3. Set the auth email template to show the **code** (`{{ .Token }}`), not the link. Keep it minimal.
 4. Seed the guest list: `npm run seed:guests` from the real CSV (see `supabase/seed/`).
 5. Point the custom domain at Vercel. Confirm `noindex` is live.
