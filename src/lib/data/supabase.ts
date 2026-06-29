@@ -62,21 +62,32 @@ export const supabaseClient: DataClient = {
       return { ok: false, reason: "bad-code" };
     }
     const supabase = sb();
+
+    const freshAnon = async () => {
+      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signInAnonymously();
+      return !error;
+    };
+
     // Reuse an existing session if there is one, so re-tapping your name keeps
     // the same auth user instead of minting a new anonymous one each time.
     const {
       data: { session },
     } = await supabase.auth.getSession();
-    if (!session) {
-      const { error: anonErr } = await supabase.auth.signInAnonymously();
-      if (anonErr) return { ok: false, reason: "unknown" };
+    if (!session && !(await freshAnon())) {
+      return { ok: false, reason: "unknown" };
     }
-    const { error } = await supabase.rpc("link_me", { p_guest_id: guestId });
-    if (error)
-      return {
-        ok: false,
-        reason: error.message.includes("claimed") ? "taken" : "unknown",
-      };
+
+    let { error } = await supabase.rpc("link_me", { p_guest_id: guestId });
+    // A stored session can outlive its auth user (e.g. the project's anonymous
+    // users were wiped). link_me then fails to bind, so start a clean session
+    // and try once more before giving up — this is what keeps a returning
+    // guest from getting stuck on "something went wrong".
+    if (error) {
+      if (!(await freshAnon())) return { ok: false, reason: "unknown" };
+      ({ error } = await supabase.rpc("link_me", { p_guest_id: guestId }));
+    }
+    if (error) return { ok: false, reason: "unknown" };
     return { ok: true };
   },
 
