@@ -2,7 +2,7 @@
 
 import { useGame } from "../app/game";
 import { useLang } from "../app/LangContext";
-import { LangToggle, TabBar } from "../app/chrome";
+import { LangToggle, TabBar, useCollapse, lerp } from "../app/chrome";
 import { ScheduleList } from "../app/ScheduleList";
 import { GAME_META, tx } from "@/lib/games/view";
 import { C } from "@/lib/design/tokens";
@@ -11,6 +11,8 @@ export function Hub() {
   const g = useGame();
   const { lang, t } = useLang();
   const wordle = GAME_META.wordle;
+  // Bigger today's-game image that eases down a touch as the hub scrolls.
+  const { ref: imgRef, p } = useCollapse(220);
 
   return (
     <div className="screen" style={{ minHeight: "100vh", paddingBottom: 88 }}>
@@ -66,7 +68,12 @@ export function Hub() {
           }}
         >
           <div
-            style={{ position: "relative", height: 150, overflow: "hidden" }}
+            ref={imgRef}
+            style={{
+              position: "relative",
+              height: lerp(208, 150, p),
+              overflow: "hidden",
+            }}
           >
             <div
               style={{

@@ -17,7 +17,7 @@ export function Join() {
       <div
         style={{
           position: "relative",
-          height: 340,
+          height: "max(340px, min(440px, 48vh))",
           flex: "none",
           overflow: "hidden",
         }}

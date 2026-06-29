@@ -1,7 +1,45 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useLang } from "./LangContext";
 import { C } from "@/lib/design/tokens";
+
+/**
+ * Scroll-driven collapse. Returns a ref to attach to the collapsing element and
+ * a progress value p (0 = fully expanded at the top, 1 = fully collapsed after
+ * scrolling `distance`px). Works on both layouts: mobile scrolls the window,
+ * tablet/desktop scrolls the nearest `.paper` ancestor (overflow:auto).
+ */
+export function useCollapse(distance = 130) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let scroller: HTMLElement | Window = window;
+    let n: HTMLElement | null = el.parentElement;
+    while (n) {
+      const oy = getComputedStyle(n).overflowY;
+      if (oy === "auto" || oy === "scroll") {
+        scroller = n;
+        break;
+      }
+      n = n.parentElement;
+    }
+    const read = () =>
+      scroller === window
+        ? window.scrollY
+        : (scroller as HTMLElement).scrollTop;
+    const onScroll = () => setP(Math.min(1, Math.max(0, read() / distance)));
+    onScroll();
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => scroller.removeEventListener("scroll", onScroll);
+  }, [distance]);
+  return { ref, p };
+}
+
+/** Linear interpolate between a (p=0) and b (p=1). */
+export const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
 
 /** EN / FR pill toggle. */
 export function LangToggle({ pad = "5px 12px" }: { pad?: string }) {
@@ -56,11 +94,18 @@ export function GameHero({
   onBack: () => void;
 }) {
   const { t } = useLang();
+  // Tall watercolour at the top; collapses to a slim sticky band as the game
+  // content scrolls under it. Stays put on screens that don't overflow.
+  const { ref, p } = useCollapse(150);
+  const height = lerp(188, 92, p);
   return (
     <div
+      ref={ref}
       style={{
-        position: "relative",
-        height: 104,
+        position: "sticky",
+        top: 0,
+        zIndex: 6,
+        height,
         flex: "none",
         overflow: "hidden",
       }}
@@ -83,7 +128,7 @@ export function GameHero({
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          objectPosition: "center 45%",
+          objectPosition: `center ${lerp(38, 50, p)}%`,
         }}
       />
       <div
@@ -118,7 +163,15 @@ export function GameHero({
       <div style={{ position: "absolute", right: 14, top: 14 }}>
         <LangToggle pad="4px 8px" />
       </div>
-      <div style={{ position: "absolute", left: 20, bottom: 11 }}>
+      <div
+        style={{
+          position: "absolute",
+          left: 20,
+          bottom: 11,
+          transform: `scale(${lerp(1, 0.82, p)})`,
+          transformOrigin: "left bottom",
+        }}
+      >
         <div
           style={{
             font: "600 10px var(--font-sans)",
