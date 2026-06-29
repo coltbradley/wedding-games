@@ -1,0 +1,26 @@
+name: keep-supabase-warm
+
+# Free Supabase projects pause after ~7 days of inactivity. During the wedding
+# week, guests playing daily keep it awake; this ping covers the quiet weeks
+# before launch so it never goes dormant. If it ever did, un-pausing from the
+# dashboard takes ~1 minute with no data loss. See docs/DEPLOYMENT.md.
+
+on:
+  schedule:
+    - cron: "0 9 */3 * *" # every 3 days, 09:00 UTC
+  workflow_dispatch: {} # also runnable by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then echo "SUPABASE_URL secret not set yet — skipping"; exit 0; fi
+          curl -fsS "$SUPABASE_URL/rest/v1/guests?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" > /dev/null \
+            && echo "Supabase pinged, staying warm."

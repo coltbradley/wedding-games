@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -16,16 +17,19 @@ import {
   twoTruthsView,
   wordleView,
 } from "@/lib/games/view";
+import { buildRawResult } from "@/lib/games/result";
 import { buildShareText } from "@/lib/games/logic";
+import { data, type LeaderRow, type RosterEntry } from "@/lib/data";
 import type { GameId } from "@/lib/games/types";
 
-export type Screen = "join" | "hub" | GameId | "results" | "leaderboard";
+export type Screen =
+  "join" | "namepick" | "hub" | GameId | "results" | "leaderboard";
 export type Board = "today" | "all";
 type Done = Partial<Record<GameId, number | "X">>;
 
 interface ConnTile {
-  gi: number; // group index
-  mi: number; // member index within group
+  gi: number;
+  mi: number;
 }
 interface ConnState {
   order: ConnTile[];
@@ -38,15 +42,24 @@ interface ConnState {
 
 interface State {
   screen: Screen;
+  booting: boolean;
   user: string;
-  email: string;
-  emailErr: boolean;
   toast: string;
   loading: boolean;
   copied: boolean;
   lastGame: GameId;
   board: Board;
   done: Done;
+  startedAt: number | null;
+  // sign-in (name-pick)
+  roster: RosterEntry[];
+  selectedGuestId: string | null;
+  eventCode: string;
+  signInErr: "" | "bad-code" | "taken" | "unknown";
+  // leaderboard
+  leaders: LeaderRow[];
+  boardLoading: boolean;
+  // games
   wordle: { current: string; guesses: string[]; flipRow: number | null };
   trivia: { i: number; picks: number[] };
   tt: { i: number; picks: number[] };
@@ -59,15 +72,21 @@ const TODAY_DAY = 1; // every game is openable in this build; day 1 is featured
 function initialState(): State {
   return {
     screen: "join",
+    booting: true,
     user: "",
-    email: "",
-    emailErr: false,
     toast: "",
     loading: false,
     copied: false,
     lastGame: "wordle",
     board: "today",
     done: {},
+    startedAt: null,
+    roster: [],
+    selectedGuestId: null,
+    eventCode: "",
+    signInErr: "",
+    leaders: [],
+    boardLoading: false,
     wordle: { current: "", guesses: [], flipRow: null },
     trivia: { i: 0, picks: [] },
     tt: { i: 0, picks: [] },
@@ -86,16 +105,19 @@ function initialState(): State {
 export interface Game {
   s: State;
   lang: ReturnType<typeof useLang>;
+  // sign-in
+  goNamePick: () => void;
+  goJoin: () => void;
+  selectGuest: (id: string) => void;
+  onEventCode: (v: string) => void;
+  submitName: () => void;
   // navigation
-  enter: () => void;
-  onEmail: (v: string) => void;
   openGame: (id: GameId) => void;
   goHub: () => void;
   goBoard: () => void;
   goGames: () => void;
   openResults: () => void;
   setBoard: (b: Board) => void;
-  toastLocked: (day: number, name: string) => void;
   // wordle
   wordleAnswer: () => string;
   onKey: (k: string) => void;
@@ -123,35 +145,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const loadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const merge = (p: Partial<State>) => setS((prev) => ({ ...prev, ...p }));
 
+  // Bootstrap: if a session already exists (returning guest), skip sign-in.
+  useEffect(() => {
+    let alive = true;
+    data.getProfile().then((profile) => {
+      if (!alive) return;
+      if (profile)
+        merge({
+          user: profile.firstName || profile.displayName,
+          screen: "hub",
+          booting: false,
+        });
+      else merge({ booting: false });
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const wordleAnswer = () => wordleView(lang.lang).answer;
 
-  const scoreOf = (id: GameId): number | "X" => {
-    if (id === "wordle") {
-      const ans = wordleAnswer();
-      return s.wordle.guesses.includes(ans) ? s.wordle.guesses.length : "X";
-    }
-    if (id === "trivia")
-      return s.trivia.picks.filter((p, i) => p === triviaView()[i]?.answerIndex)
-        .length;
-    if (id === "two-truths")
-      return s.tt.picks.filter((p, i) => p === twoTruthsView()[i]?.lieIndex)
-        .length;
-    if (id === "travel")
-      return s.travel.picks.filter((p, i) => p === travelView()[i]?.answer)
-        .length;
-    if (id === "connections") return s.conn.solved.length;
-    return 0;
-  };
-
-  const finishGame = (id: GameId) =>
-    setS((prev) => ({
-      ...prev,
-      done: { ...prev.done, [id]: scoreOfWith(prev, id) },
-      lastGame: id,
-      screen: "results",
-    }));
-
-  // scoreOf against an explicit state (used inside setState callbacks)
+  const scoreOf = (id: GameId): number | "X" => scoreOfWith(s, id);
   const scoreOfWith = (st: State, id: GameId): number | "X" => {
     if (id === "wordle") {
       const ans = wordleAnswer();
@@ -171,21 +185,51 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return 0;
   };
 
+  // Persist the finished game, then show the result card.
+  const finishGame = (id: GameId) => {
+    setS((prev) => {
+      const elapsedMs = prev.startedAt ? Date.now() - prev.startedAt : 0;
+      const raw = buildRawResult(id, prev, lang.lang, elapsedMs);
+      data.submitResult(raw).catch(() => {
+        /* best-effort; a wedding game shouldn't block on a write */
+      });
+      return {
+        ...prev,
+        done: { ...prev.done, [id]: scoreOfWith(prev, id) },
+        lastGame: id,
+        screen: "results",
+      };
+    });
+  };
+
   const game: Game = {
     s,
     lang,
 
-    onEmail: (v) => merge({ email: v, emailErr: false }),
-    enter: () => {
-      const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s.email.trim());
-      if (!ok) return merge({ emailErr: true });
-      const name = s.email
-        .trim()
-        .split("@")[0]
-        .split(/[.\-_]/)[0];
+    goNamePick: () => {
+      merge({ screen: "namepick", signInErr: "" });
+      data.listGuests().then((roster) => merge({ roster }));
+    },
+    goJoin: () =>
       merge({
-        screen: "hub",
-        user: name.charAt(0).toUpperCase() + name.slice(1),
+        screen: "join",
+        selectedGuestId: null,
+        eventCode: "",
+        signInErr: "",
+      }),
+    selectGuest: (id) => merge({ selectedGuestId: id, signInErr: "" }),
+    onEventCode: (v) => merge({ eventCode: v, signInErr: "" }),
+    submitName: () => {
+      if (!s.selectedGuestId) return;
+      data.signInWithName(s.selectedGuestId, s.eventCode).then((res) => {
+        if (!res.ok) return merge({ signInErr: res.reason });
+        data.getProfile().then((profile) => {
+          merge({
+            user: profile ? profile.firstName || profile.displayName : "",
+            screen: "hub",
+            eventCode: "",
+          });
+        });
       });
     },
 
@@ -195,6 +239,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         lastGame: id,
         screen: id,
         toast: "",
+        startedAt: Date.now(),
       };
       if (id === "connections" && s.conn.order.length === 0) {
         const groups = connectionsView(lang.lang);
@@ -217,11 +262,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
       loadTimer.current = setTimeout(() => merge({ loading: false }), 600);
     },
     goHub: () => merge({ screen: "hub", toast: "" }),
-    goBoard: () => merge({ screen: "leaderboard" }),
+    goBoard: () => {
+      merge({ screen: "leaderboard", boardLoading: true });
+      data
+        .getLeaderboard()
+        .then((leaders) => merge({ leaders, boardLoading: false }));
+    },
     goGames: () => merge({ screen: "hub", toast: "" }),
     openResults: () => merge({ screen: "results" }),
     setBoard: (b) => merge({ board: b }),
-    toastLocked: (_day, name) => merge({ toast: `${lang.t.openOn} ${name}` }),
 
     wordleAnswer,
     onKey: (k) => {

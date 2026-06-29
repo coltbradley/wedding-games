@@ -5,6 +5,7 @@ import { GameProvider, useGame } from "./game";
 import { LangToggle, Loader } from "./chrome";
 import { ScheduleList } from "./ScheduleList";
 import { Join } from "../screens/Join";
+import { NamePick } from "../screens/NamePick";
 import { Hub } from "../screens/Hub";
 import { Wordle } from "../screens/Wordle";
 import { Trivia } from "../screens/Trivia";
@@ -20,6 +21,8 @@ function CurrentScreen() {
   switch (s.screen) {
     case "join":
       return <Join />;
+    case "namepick":
+      return <NamePick />;
     case "hub":
       return <Hub />;
     case "wordle":
@@ -122,7 +125,8 @@ function Rail() {
 
 function Shell() {
   const { s } = useGame();
-  const showChrome = s.screen !== "join";
+  const preAuth = s.screen === "join" || s.screen === "namepick";
+  const showChrome = !preAuth;
 
   return (
     <div className="stage">
@@ -141,7 +145,7 @@ function Shell() {
             boxShadow: "0 0 60px rgba(90,35,51,.10)",
           }}
         >
-          {s.loading && <Loader />}
+          {(s.loading || s.booting) && <Loader />}
           <CurrentScreen />
         </div>
         {showChrome && <Rail />}

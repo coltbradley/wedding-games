@@ -59,6 +59,19 @@ export interface Strings {
   mistakesWord: string;
   viewBoard: string;
   rightWord: string;
+  findName: string;
+  pickName: string;
+  pickNameSub: string;
+  search: string;
+  noNames: string;
+  change: string;
+  eventCode: string;
+  eventCodePh: string;
+  badCode: string;
+  nameTaken: string;
+  signInProblem: string;
+  signIn: string;
+  thatsMe: string;
 }
 
 export const STR: Record<Lang, Strings> = {
@@ -116,6 +129,19 @@ export const STR: Record<Lang, Strings> = {
     mistakesWord: "Guesses",
     viewBoard: "View leaderboard",
     rightWord: "right",
+    findName: "Find your name",
+    pickName: "Find your name",
+    pickNameSub: "Tap your name to join. We’ll remember you on this phone.",
+    search: "Search your name…",
+    noNames: "No match — try your first name.",
+    change: "Change",
+    eventCode: "Guest code",
+    eventCodePh: "From your invitation",
+    badCode: "That code isn’t right.",
+    nameTaken: "Someone’s already playing as this guest.",
+    signInProblem: "Something went wrong. Try again.",
+    signIn: "Let’s go",
+    thatsMe: "That’s me — let’s go",
   },
   fr: {
     date: "Mercredi · 5 août · Bourgogne",
@@ -171,5 +197,19 @@ export const STR: Record<Lang, Strings> = {
     mistakesWord: "Essais",
     viewBoard: "Voir le classement",
     rightWord: "bonnes",
+    findName: "Trouve ton nom",
+    pickName: "Trouve ton nom",
+    pickNameSub:
+      "Touche ton nom pour entrer. On te reconnaîtra sur ce téléphone.",
+    search: "Cherche ton nom…",
+    noNames: "Aucun résultat — essaie ton prénom.",
+    change: "Changer",
+    eventCode: "Code invité",
+    eventCodePh: "Sur ton invitation",
+    badCode: "Ce code n’est pas correct.",
+    nameTaken: "Quelqu’un joue déjà avec ce nom.",
+    signInProblem: "Une erreur s’est produite. Réessaie.",
+    signIn: "C’est parti",
+    thatsMe: "C’est moi — c’est parti",
   },
 };

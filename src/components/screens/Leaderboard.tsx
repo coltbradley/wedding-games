@@ -3,7 +3,6 @@
 import { useGame } from "../app/game";
 import { useLang } from "../app/LangContext";
 import { TabBar } from "../app/chrome";
-import { MOCK_LEADERBOARD } from "@/lib/mock-leaderboard";
 import { C } from "@/lib/design/tokens";
 
 export function Leaderboard() {
@@ -11,10 +10,10 @@ export function Leaderboard() {
   const { t } = useLang();
   const metric = g.s.board === "today" ? "today" : "all";
 
-  const leaders = [...MOCK_LEADERBOARD]
-    .map((p) => ({ name: p.name, val: p[metric] }))
+  const leaders = g.s.leaders
+    .map((p) => ({ name: p.name, val: p[metric], me: p.me }))
     .sort((a, b) => b.val - a.val)
-    .map((p, i) => ({ ...p, rank: i + 1, me: p.name === g.s.user }));
+    .map((p, i) => ({ ...p, rank: i + 1 }));
 
   const pill = (on: boolean) => ({
     bg: on ? C.wine : "transparent",
@@ -105,6 +104,18 @@ export function Leaderboard() {
           gap: 8,
         }}
       >
+        {!g.s.boardLoading && leaders.length === 0 && (
+          <div
+            style={{
+              textAlign: "center",
+              color: "#A8A49A",
+              font: "400 14px var(--font-sans)",
+              marginTop: 28,
+            }}
+          >
+            {t.noScoreYet}
+          </div>
+        )}
         {leaders.map((p, i) => (
           <div
             key={p.name}

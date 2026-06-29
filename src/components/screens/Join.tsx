@@ -8,7 +8,6 @@ import { C } from "@/lib/design/tokens";
 export function Join() {
   const g = useGame();
   const { t } = useLang();
-  const s = g.s;
 
   return (
     <div
@@ -146,81 +145,48 @@ export function Join() {
             zIndex: 1,
             marginTop: "auto",
             paddingTop: 28,
-            textAlign: "left",
           }}
         >
-          <label
-            style={{ font: "600 13px var(--font-sans)", color: "#6E6E6A" }}
-          >
-            {t.email}
-          </label>
-          <div
+          <button
+            onClick={g.goNamePick}
             style={{
+              width: "100%",
+              height: 56,
+              border: 0,
+              borderRadius: 16,
+              background: C.wine,
+              color: C.paper,
+              font: "600 16px var(--font-sans)",
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              marginTop: 8,
-              background: "#fff",
-              border: `1.5px solid ${s.emailErr ? "#C0584A" : "rgba(110,44,62,.18)"}`,
-              borderRadius: 16,
-              padding: "4px 4px 4px 16px",
-              boxShadow: "0 2px 8px rgba(90,35,51,.05)",
+              justifyContent: "center",
+              gap: 10,
             }}
           >
-            <input
-              value={s.email}
-              onChange={(e) => g.onEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && g.enter()}
-              placeholder={t.emailPh}
-              inputMode="email"
-              style={{
-                flex: 1,
-                border: 0,
-                background: "transparent",
-                font: "500 16px var(--font-sans)",
-                color: C.ink,
-                outline: "none",
-                minWidth: 0,
-              }}
-            />
-            <button
-              onClick={g.enter}
-              aria-label="Enter"
-              style={{
-                width: 48,
-                height: 48,
-                border: 0,
-                borderRadius: 13,
-                background: C.wine,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+            {t.findName}
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={C.paper}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={C.paper}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </button>
-          </div>
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
           <p
             style={{
               font: "400 13px/1.5 var(--font-sans)",
-              color: s.emailErr ? "#C0584A" : "#A8A49A",
+              color: "#A8A49A",
               marginTop: 12,
               textAlign: "center",
             }}
           >
-            {s.emailErr ? t.emailBad : t.noPw}
+            {t.noPw}
           </p>
         </div>
       </div>
