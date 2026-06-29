@@ -5,9 +5,11 @@ Short-lived event app. Goal: stand it up cheaply, keep it boring, and be certain
 ## Environments
 
 - **Local:** `npm run dev`. With no Supabase keys in `.env` it runs in **mock mode** (fully playable, scores not saved, placeholder board). Add keys to test the real backend.
-- **Production:** Vercel at **`wedding.graphite.productions`**, pointed at a Supabase project.
+- **Production:** Vercel at **`wedding.cdbradley.com`**, pointed at a Supabase project (`alqedfrfxswyiysbgusd`).
 
 One Supabase project is fine for an event this small. Wipe `game_results` before go-live so test plays don't pollute the real board (`delete from game_results;`).
+
+> Mock-mode trap: the env vars below are `NEXT_PUBLIC_*`, so they are inlined at **build** time. If they are missing from the Vercel build, the deployed app silently falls back to the mock client (a fake roster including Valentine, Léa, Margaux, and no real scores). If you see those names on the live site, the keys were not set. Add them in Vercel and **redeploy** (setting the vars without a fresh build does nothing).
 
 ## Secrets (`.env` locally; Vercel env vars in prod — never committed)
 
@@ -19,10 +21,10 @@ See `.env.example`. The essentials:
 
 ## One-time setup
 
-1. Create the Supabase project. Run `supabase/migrations/0001_init.sql` then `0002_auth_link.sql` in the SQL editor.
-2. In Supabase **Auth → Providers**, enable **Anonymous sign-ins** (the name-pick flow relies on it).
+1. Create the Supabase project. Run `supabase/migrations/0001_init.sql`, then `0002_auth_link.sql`, then `0003_harden.sql` in the SQL editor. (`0003` makes the leaderboard view `security_invoker` and locks the `link_me` RPC to authenticated users, clearing the Supabase advisors.)
+2. In Supabase **Auth → Providers**, enable **Anonymous sign-ins** (the name-pick flow relies on it). The MCP cannot toggle this; it is a manual dashboard step.
 3. Seed the guest list: `npm run seed:guests -- path/to/guests.csv` (see `supabase/seed/`).
-4. Deploy to Vercel from GitHub; add the env vars above. Point `wedding.graphite.productions` at Vercel. Confirm `noindex` is live.
+4. Deploy to Vercel from GitHub; add the env vars above, then redeploy so the build picks them up (see the mock-mode trap above). Point `wedding.cdbradley.com` at Vercel. Confirm `noindex` is live.
 5. (Optional) Add GitHub secrets `SUPABASE_URL` + `SUPABASE_ANON_KEY` so the **keep-warm** Action (`.github/workflows/keep-warm.yml`) can stop the free project going dormant before launch.
 
 ## Supabase dormancy

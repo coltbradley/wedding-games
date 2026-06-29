@@ -29,17 +29,17 @@ Next.js (App Router) + Vercel, Supabase (Postgres + Auth), Tailwind, next-intl, 
 - `src/components/app/` — the live UI: `WeddingGamesApp` (shell + screen router), `game.tsx` (client state machine, ported from the design prototype), `LangContext` (instant FR/EN toggle), `chrome.tsx`, `ScheduleList`.
 - `src/components/screens/` — one component per screen (Join, Hub, Wordle, Trivia, TwoTruths, Travel, Connections, Results, Leaderboard).
 - `src/lib/games/view.ts` — adapts content JSON into UI view models. `logic.ts` — Wordle eval + share-card text. `strings.ts` — bilingual UI copy. `design/tokens.ts` — colours.
-- `src/lib/supabase/` — browser + server clients (not yet wired into the UI; see below).
+- `src/lib/supabase/` — browser + server clients, wired into the data layer (`src/lib/data/supabase.ts`).
 - `supabase/migrations/` — schema. `supabase/seed/` — guest-list seeding.
 
 ## Conventions
 
 - The UI is a faithful port of the Claude Design prototype ("Wedding Games Design Brief"). Fonts: Cormorant Garamond (display) + Inter. Palette in `design/tokens.ts`. Watercolour image assets go in `public/assets/` (gradient fallbacks show until then).
-- Current build is client-side with a mock leaderboard (`src/lib/mock-leaderboard.ts`); real Supabase auth (email OTP), scoring, and leaderboard wiring is the next track. `src/lib/scoring` + `registry.ts` already hold the real server-side model.
+- The data layer (`src/lib/data`) auto-selects its backend by env keys. With `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` set, it uses the live Supabase backend (name-pick sign-in, scoring, leaderboard); without them it falls back to the mock client (`src/lib/mock-leaderboard.ts`) for local play. The backend is wired and verified end to end against the live project. `src/lib/scoring` + `registry.ts` hold the server-side model.
 - Content is bundled at build time; guests + scores are the only runtime state.
 - Scores are computed server-side from submitted raw results — the client never reports its own final score.
 - "Speed" in scoring means session duration, never how early in the week someone played. Catch-up is always allowed and never penalized.
-- Sign-in: email code (OTP) primary, name-pick + shared event code fallback. See `docs/DECISIONS.md` #2.
+- Sign-in: name-pick + remember-on-device (anonymous auth, then the `link_me` RPC binds the device to a guest), with an optional shared event code (`NEXT_PUBLIC_EVENT_CODE`, default off). Email OTP is a deliberate non-goal. See `docs/DECISIONS.md` #2.
 - Timezone is fixed to Europe/Paris for unlocks, regardless of device.
 
 ## Before committing

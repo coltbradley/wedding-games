@@ -1,47 +1,53 @@
 # Status — resume here
 
-Last updated mid-build, before the Supabase backend is connected. This is the single "where are we / what's next" doc. Read this first when picking the project back up.
+The single "where are we / what's next" doc. Read this first when picking the project back up.
 
 ## One-line state
 
-The app is complete and the Supabase backend is **live and verified end to end** — anonymous sign-in, `link_me` binding, RLS (own-writes allowed, cross-guest writes blocked), score persistence, and idempotent re-link all pass against the real project. Local `.env` has live keys. Remaining work is deploy to Vercel and the real guest list.
+App complete, Supabase backend wired and verified end to end, and deployed to Vercel at `wedding.cdbradley.com`. The one thing standing between the live site and the real backend is the Supabase env vars on Vercel: until they are set and the site is rebuilt, production runs in mock mode.
 
 ## Where things live
 
 - **Repo:** `github.com/coltbradley/wedding-games`, branch `main` (pushed). Local: `~/Documents/code/wedding-games`.
-- **Design source:** Claude Design project "Wedding Games Design Brief" (id in `~/.claude` memory). Watercolour assets already exported into `public/assets/`.
-- **Supabase project:** created, ref `alqedfrfxswyiysbgusd`. MCP server added to `.mcp.json` (uncommitted) but **not yet authenticated**.
+- **Live site:** `wedding.cdbradley.com` (Vercel).
+- **Design source:** Claude Design project "Wedding Games Design Brief" (id in `~/.claude` memory). Watercolour assets exported into `public/assets/`.
+- **Supabase project:** ref `alqedfrfxswyiysbgusd`. MCP server config in `.mcp.json` (committed; no secret in it).
 
 ## Done
 
-- Full UI: all 10 screens (join, name-pick, hub, 5 games, results/share card, leaderboard), faithful port of the design prototype. Bilingual FR/EN with instant toggle. Mobile + tablet + desktop layouts.
+- Full UI: all 10 screens, faithful port of the design prototype. Bilingual FR/EN with instant toggle. Mobile, tablet, desktop layouts.
 - Real game content (`src/content/games/*.json`, validated) and compressed watercolour imagery.
-- Sign-in decided and built: **name-pick + remember-on-device, no email.** Shared guest code is optional via `NEXT_PUBLIC_EVENT_CODE` (default off = tap name, confirm, in). See `docs/DECISIONS.md` #2.
-- Backend code: data-layer abstraction (`src/lib/data`, mock + supabase impls, auto-selected by env keys), score submission, live-leaderboard query, migrations `0001_init.sql` + `0002_auth_link.sql`, keep-warm GitHub Action.
-- Verified: `npm run typecheck`, `npm run content:check` (5/5), `npm run build`, and a full browser click-through of mock mode all pass.
+- Sign-in: name-pick + remember-on-device, no email. Optional shared event code via `NEXT_PUBLIC_EVENT_CODE` (default off). See `docs/DECISIONS.md` #2.
+- Backend wired and proven against the live project: migrations `0001`/`0002`/`0003_harden` applied, 22 test guests seeded, anonymous sign-ins enabled. A smoke test passed all checks: anonymous sign-in, `link_me` binding, RLS (own writes allowed, cross-guest writes blocked), score persistence, idempotent re-link, leaderboard read. DB left pristine (0 results, 0 bound, 22 guests).
+- Deployed to Vercel and verified on production: the desktop Games/Board nav and the bigger, scroll-collapsing imagery are live.
 
-## Not done / untested
+### Fixed this session
 
-- "Anonymous sign-ins" not yet enabled in the Supabase dashboard (required for name-pick / remember-on-device). **This is the next blocker.** The MCP has no tool for auth config, so it's a manual dashboard toggle.
-- `src/lib/data/supabase.ts` is wired but **not yet exercised against the live project** — needs a real local click-through once anonymous sign-ins is on.
-- Not deployed to Vercel; domain `wedding.graphite.productions` not connected.
-- Real guest list not loaded (test list of 22 is seeded; swap before launch).
+- **Wordle scores never persisted.** It was the only game with no submission path (the others submit via `finishGame`; the wordle solve handler only updated local state). Now submits on completion. The most important game, since it is day 1.
+- **Desktop lost all navigation and the leaderboard.** The Games/Board switch lived only in the mobile bottom bar, hidden at >=1024px. Added a Games/Board switch to the desktop top band.
+- **`0003_harden` migration** cleared the security-definer-view advisor (leaderboard view is now `security_invoker`) and locked `link_me` to authenticated users.
+- **Bigger, scroll-collapsing imagery.** The game hero is taller and collapses to a slim sticky band on scroll; hub image enlarged; château made responsive.
+- **Node engine pinned** to `22.x` for Vercel.
+
+## Not done
+
+- **Production is in mock mode.** The Vercel build does not have `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`, so the deployed app falls back to the mock client (fake roster, no persistence). These are build-time vars, so they must be set in Vercel and the site redeployed. See `docs/DEPLOYMENT.md`.
+- Real guest list not loaded (22 test guests are seeded; swap before launch).
+- Domain `wedding.cdbradley.com` connected; confirm `noindex` is live in production.
+- GitHub secrets `SUPABASE_URL` + `SUPABASE_ANON_KEY` for the keep-warm Action are optional and not set.
 
 ## Next actions, in order
 
-1. ~~Authenticate Supabase MCP.~~ Done.
-2. ~~Apply `0001`/`0002`, seed test guests, verify.~~ Done — plus `0003_harden.sql` (cleared the security-definer-view advisor; locked `link_me` to authenticated). 22 guests seeded, `link_me` present, RLS on, leaderboard view returns rows. Local `.env` written with live URL + publishable key (gitignored), so the app is in real mode.
-3. ~~Enable Anonymous sign-ins.~~ Done.
-4. ~~Verify the real flow against the live project.~~ Done — backend smoke test passed all 7 checks (anon sign-in, link_me, RLS allow/deny, persistence, idempotent re-link); test artifacts wiped, seed back to pristine 22 guests / 0 results. A manual `npm run dev` click-through is still worth doing once for UI confidence, but the data layer is proven.
-5. **Colt:** Vercel — import the repo, add env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (values in local `.env`), deploy, connect the domain (Part C in `docs/DEPLOYMENT.md`).
-6. **Before launch:** swap the test guest list for the real one, wipe `game_results`, run the pre-launch checklist in `docs/DEPLOYMENT.md`. Optionally add GitHub secrets `SUPABASE_URL` + `SUPABASE_ANON_KEY` so keep-warm runs.
+1. **Colt (Vercel):** add `NEXT_PUBLIC_SUPABASE_URL=https://alqedfrfxswyiysbgusd.supabase.co` and `NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_MIaeObqgp7j4Y2-XplIRnQ_ebgAqVBp`, then redeploy. (In progress.)
+2. **Verify on production:** real guest list loads (not the mock Valentine/Léa/Margaux roster), a wordle score persists, the leaderboard reads live, and a reload stays signed in.
+3. **Before launch:** swap the test guest list for the real one, wipe `game_results`, run the pre-launch checklist in `docs/DEPLOYMENT.md`.
+4. **Optional:** add the GitHub keep-warm secrets so the free project does not go dormant before the event.
 
 ## Open decisions (none blocking)
 
 - Whether to require a shared guest code (`NEXT_PUBLIC_EVENT_CODE`). Currently off.
-- Whether to commit `.mcp.json` (no secret in it; left uncommitted for now).
 - Email-OTP sign-in stays a deliberate non-goal; can be added later in ~10 min if ever wanted.
 
 ## Timeline
 
-Games run Fri Jul 31 – Tue Aug 4, 2026; reveal at the reception Wed Aug 5. Content locked ~2 weeks before. "Live in 5 weeks" from late June ≈ the event itself.
+Games run Fri Jul 31 to Tue Aug 4, 2026; reveal at the reception Wed Aug 5. Content locked ~2 weeks before.

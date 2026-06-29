@@ -11,7 +11,7 @@ Tap a link → land logged in → play today's game (~2 min) → get a score and
 ## Stack
 
 - **Next.js** (App Router) on **Vercel**
-- **Supabase** (Postgres + Auth magic links)
+- **Supabase** (Postgres + Auth; anonymous sign-in behind a name pick)
 - **Tailwind** for mobile-first styling
 - **next-intl** for FR/EN
 - **PWA** (installable, fast on phones)
@@ -44,7 +44,7 @@ public/              PWA manifest + icons
 ```bash
 nvm use                 # Node version pinned in .nvmrc
 npm install
-cp .env.example .env    # fill in Supabase + email provider keys
+cp .env.example .env    # add Supabase URL + anon key (omit them to run in mock mode)
 npm run dev             # http://localhost:3000
 ```
 
@@ -54,4 +54,4 @@ Colt & Valentine own all game content and deliver it finished, in both languages
 
 ## Status
 
-UI complete and playable in mock mode (no keys needed). Backend (name-pick sign-in, scoring, leaderboard) is written; connecting it to Supabase is the current step. See **`docs/STATUS.md`** for exactly where things stand and the next actions.
+UI complete. The Supabase backend (name-pick sign-in, scoring, live leaderboard) is wired and verified end to end against the live project, and the app is deployed to Vercel at `wedding.cdbradley.com`. Production needs the Supabase env vars set in Vercel to leave mock mode, and the real guest list still has to replace the test list before launch. See **`docs/STATUS.md`** for exactly where things stand and the next actions.

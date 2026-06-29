@@ -7,7 +7,7 @@ A small, mobile-first PWA for a known, closed audience playing for one week. Opt
 ```
             ┌─────────────────────────────────────────┐
    phone    │  Next.js PWA (App Router) on Vercel      │
-  ───────►  │   - guest sign-in (OTP / name fallback)  │
+  ───────►  │   - guest sign-in (tap name, no email)   │
             │   - today's game + catch-up              │
             │   - leaderboard (today / all-time)       │
             │   - share-card generation (client)       │
@@ -16,18 +16,15 @@ A small, mobile-first PWA for a known, closed audience playing for one week. Opt
                             ▼
             ┌─────────────────────────────────────────┐
             │  Supabase                                │
-            │   - Auth (email OTP, pre-loaded guests)  │
+            │   - Auth (anonymous, bound to a guest)   │
             │   - Postgres (guests, game_results)      │
             │   - Row-Level Security                   │
-            └───────────────┬─────────────────────────┘
-                            │  custom SMTP
-                            ▼
-            ┌─────────────────────────────────────────┐
-            │  Resend / Postmark (authenticated domain)│
-            │   - the OTP code email only              │
             └─────────────────────────────────────────┘
 
-   Game content is NOT in this picture — it's typed data
+   No email provider: sign-in is name-pick + anonymous auth,
+   so there is no OTP mail to deliver. With the Supabase env
+   keys absent the app falls back to a mock client for local
+   play. Game content is NOT in this picture: it's typed data
    in the repo (src/content/games), bundled at build time.
 ```
 
@@ -39,7 +36,7 @@ A small, mobile-first PWA for a known, closed audience playing for one week. Opt
 
 ## Data model (see `supabase/migrations/0001_init.sql`)
 
-- **`guests`** — pre-loaded. `id`, `email` (unique), `display_name`, `preferred_locale` (nullable), `created_at`. The roster for both the OTP email-match and the name-pick fallback.
+- **`guests`** — pre-loaded. `id`, `email` (unique, a stable key), `display_name`, `preferred_locale` (nullable), `auth_user_id` (the bound device session, migration 0002), `created_at`. The roster the name pick reads from.
 - **`game_results`** — one row per guest per game. `guest_id`, `game_id` (`wordle`…`connections`), `correctness` (0–1), `score` (0–1000, normalized), `elapsed_ms`, `detail` (jsonb: per-game specifics for the share card — e.g. Wordle guess pattern), `created_at`. Unique on `(guest_id, game_id)` — playing again updates, doesn't duplicate.
 - Leaderboard, daily winners, streaks, and tiebreakers are all **derived** from `game_results` (a SQL view or query), never stored. One source of truth, so the live board and the reception reveal can't disagree.
 
