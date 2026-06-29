@@ -46,6 +46,16 @@ Next.js (App Router) + Vercel, Supabase (Postgres + Auth), Tailwind, next-intl, 
 
 `npm run typecheck && npm run content:check && npm run build`
 
+Do not run `npm run build` while `npm run dev` is running. The build overwrites `.next` and the dev server then throws `Cannot find module './99.js'`. Stop dev first.
+
+## Gotchas (the full set is in `docs/LESSONS.md`)
+
+- Auth session persists to **localStorage**, not cookies (iOS Safari and PWAs evict JS-set cookies). The client is plain `@supabase/supabase-js`, not `@supabase/ssr`. Don't switch it back.
+- A stored session can outlive its auth user, so `signInWithName` self-heals (retry with a fresh anonymous user if `link_me` fails). Don't wipe `auth.users` while real sessions exist; it orphans phones.
+- `link_me` rebinds the guest to whoever signs in (honor-system identity). Scores live on `guest_id`, so rebinding never loses results.
+- Verify writes against the database, not the screen. The UI renders result cards and the leaderboard from client state, which hid two real bugs (wordle never saving, the old Today board reading 0).
+- `NEXT_PUBLIC_*` vars are inlined at build time. Missing Supabase keys on Vercel fail silently into mock mode (fake roster, no persistence); fix by setting them and redeploying.
+
 ## Voice for docs
 
 Colt's house style: sentence-case headings, no em dashes, no AI-filler vocabulary, prose over inline-header bullet lists. Match the existing docs.

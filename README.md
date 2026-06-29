@@ -21,7 +21,7 @@ See `docs/ARCHITECTURE.md` for why, and `docs/DECISIONS.md` for the open calls a
 ## Repo layout
 
 ```
-docs/                Architecture, decisions, scoring, deployment, content format
+docs/                Architecture, decisions, scoring, deployment, content format, lessons
 src/
   app/               Next.js App Router (routes, layouts)
   components/        Shared UI

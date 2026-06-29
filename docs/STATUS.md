@@ -30,6 +30,9 @@ App complete, Supabase backend wired and verified end to end, and deployed to Ve
 - **Node engine pinned** to `22.x` for Vercel.
 - **Leaderboard reworked to per-game + all-time.** The old Today/All-time toggle was confusing (and "today" shows 0 outside the event week, since no game is unlocked yet). Replaced with a scrollable chip row: All-time (cumulative) plus one board per game, each ranking only the guests who played that game on the same 0–1000 scale, which is a fairer head-to-head. The online Connections (day 5) stays on the leaderboard like the other games; the separate offline in-person Connections finale is not in the app and not on the board (see CLAUDE.md).
 - **Sign-in didn't stick, and re-sign-in failed.** The session was stored in a JS-set cookie, which iOS Safari evicts (and standalone PWAs isolate), so phones forgot the guest; then tapping the name again minted a new anonymous user that `link_me` rejected with "someone's already playing as this guest." Fixed: the browser client now persists to localStorage (a cached singleton), sign-in reuses an existing session instead of minting a new one, the boot check uses `getSession` (no network round-trip), and migration `0004_link_me_rebind` rebinds the guest to whoever signs in (identity is honor-system). Verified: a session survives cookie loss, and a guest bound to an orphaned session signs straight back in.
+- **Sign-in self-heals an orphaned session.** A stored session can outlive its anonymous auth user (e.g. a test wipe of `auth.users`), which made `link_me` fail and surfaced as "something went wrong" with no escape. `signInWithName` now retries once with a fresh anonymous user. This matters at launch: the pre-launch data wipe would otherwise lock out every already-signed-in guest.
+
+The hard-won gotchas behind these fixes are written up in `docs/LESSONS.md`.
 
 ## Not done
 
