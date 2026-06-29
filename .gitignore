@@ -1,0 +1,28 @@
+# Secrets & env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials*.json
+service-account*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.cursor/
+
+# Logs & temp
+*.log
+logs/
+tmp/
+.cache/
+
+# Stack-specific ignores get appended once the specs land
