@@ -112,6 +112,16 @@ Photos / guest album / slideshow (use a dedicated tool). Push notifications (Wha
 
 ---
 
+## Considered for later: live leaderboard via Supabase Realtime
+
+Not building this now, recorded so it isn't rediscovered from scratch.
+
+The leaderboard currently reads on load and on navigation. Supabase Realtime could subscribe to `game_results` and push updates so the board re-ranks live, with no refresh. The one moment it would matter is the reception reveal (goal #4, the public payoff): scores landing on a projected board in real time as the last results come in.
+
+It is a small feature, not a config toggle: enable Realtime on the table, add a client subscription that invalidates or merges the leaderboard query, and confirm RLS still only exposes what the read policy allows. Worth it only if we want the projected reveal to animate itself rather than being refreshed by hand. Decision deferred; default is no.
+
+---
+
 ## Sources (sign-in research)
 
 - [Supabase — Send emails with custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp)

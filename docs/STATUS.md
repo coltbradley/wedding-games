@@ -4,7 +4,7 @@ The single "where are we / what's next" doc. Read this first when picking the pr
 
 ## One-line state
 
-App complete, Supabase backend wired and verified end to end, and deployed to Vercel at `wedding.cdbradley.com`. The one thing standing between the live site and the real backend is the Supabase env vars on Vercel: until they are set and the site is rebuilt, production runs in mock mode.
+App complete, Supabase backend wired and verified end to end, and deployed to Vercel at `wedding.cdbradley.com` on the live backend. The Supabase env vars are set on Vercel (Production + Preview) and a fresh build has inlined them, so production is out of mock mode. What remains before launch is swapping the 22 test guests for the real list and wiping `game_results`.
 
 ## Where things live
 
@@ -36,17 +36,16 @@ The hard-won gotchas behind these fixes are written up in `docs/LESSONS.md`.
 
 ## Not done
 
-- **Production is in mock mode.** The Vercel build does not have `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`, so the deployed app falls back to the mock client (fake roster, no persistence). These are build-time vars, so they must be set in Vercel and the site redeployed. See `docs/DEPLOYMENT.md`.
 - Real guest list not loaded (22 test guests are seeded; swap before launch).
 - Domain `wedding.cdbradley.com` connected; confirm `noindex` is live in production.
-- GitHub secrets `SUPABASE_URL` + `SUPABASE_ANON_KEY` for the keep-warm Action are optional and not set.
+- ~~GitHub secrets for the keep-warm Action~~ — done. `SUPABASE_URL` + `SUPABASE_ANON_KEY` are set and the `keep-supabase-warm` workflow ran green, so the free project will not go dormant before the event.
 
 ## Next actions, in order
 
-1. **Colt (Vercel):** add `NEXT_PUBLIC_SUPABASE_URL=https://alqedfrfxswyiysbgusd.supabase.co` and `NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_MIaeObqgp7j4Y2-XplIRnQ_ebgAqVBp`, then redeploy. (In progress.)
-2. **Verify on production:** real guest list loads (not the mock Valentine/Léa/Margaux roster), a wordle score persists, the leaderboard reads live, and a reload stays signed in.
+1. **Done — Supabase env vars are set on Vercel (Production + Preview) and a fresh production build has inlined them.** Verified: the live bundle on `wedding.cdbradley.com` contains the Supabase URL, and an anonymous REST read of `guests` with the publishable key returns all 22 rows. The vars are stored as Vercel "Sensitive" type, so `vercel env pull` shows them blank — that is expected, not a sign they are unset. Build-time vars: any future change to them needs a redeploy to take effect.
+2. **Verify on production (in a browser):** real guest list loads (not the mock Valentine/Léa/Margaux roster), a wordle score persists, the leaderboard reads live, and a reload stays signed in.
 3. **Before launch:** swap the test guest list for the real one, wipe `game_results`, run the pre-launch checklist in `docs/DEPLOYMENT.md`.
-4. **Optional:** add the GitHub keep-warm secrets so the free project does not go dormant before the event.
+4. ~~Add the GitHub keep-warm secrets.~~ Done — secrets set, workflow verified green.
 
 ## Open decisions (none blocking)
 
