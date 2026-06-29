@@ -16,9 +16,15 @@ The four goals everything optimizes for: **anticipation**, **near-zero friction 
 
 ---
 
-## 2. Sign-in: email code (OTP) primary + name-pick fallback — and why not magic _link_
+## 2. Sign-in: name-pick + remember-on-device, no email
 
-This is the decision most likely to make or break the actual days, so it gets the most attention. Decided with Colt after research (see sources at the bottom of this doc).
+> **Updated decision (this is what's built).** We went simpler than the email-code plan below. Sign-in is: open the link, tap your name from the roster, confirm, you're in — and the device remembers you, so it's a one-time thing per phone. No email anywhere. A shared guest code is **optional** (`NEXT_PUBLIC_EVENT_CODE`): set it to gate against strangers, leave it unset for the absolute simplest flow.
+>
+> **Why we dropped email:** Colt's worry was deliverability to French ISPs (orange.fr, free.fr). The honest answer is that email to those providers is the single most fragile link for this exact audience, and no setup makes it 100%. Removing email removes the entire failure mode. Supabase itself works fine in France — only the _email_ was ever the France-specific risk.
+>
+> **How it's wired:** Supabase **anonymous auth** gives each guest a persistent session (an `auth.uid()` for row-level security and score writes), then the `link_me` security-definer RPC binds that session to their pre-loaded guest row (migration 0002). The session lives in the browser, so returning guests skip sign-in entirely. Trade-off: identity is honor-system (anyone could tap anyone's name), which Colt confirmed is fine; the optional shared code is the only gate, and even that isn't memorized (it's on the invite). Email-code sign-in remains a ~10-minute add-on later (the schema and data layer already support it) — the design below is preserved for that.
+
+The original email-first analysis follows. Decided after research (see sources at the bottom of this doc).
 
 **The deliverability risk is real and confirmed.** Supabase's built-in auth email is capped at ~2 emails/hour total (unusable) and sends from a shared domain that gets spam-filtered. For our exact audience — older relatives on free providers, French ISPs (orange.fr, free.fr) that filter aggressively — those mails land in spam or nowhere.
 
