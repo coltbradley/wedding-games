@@ -2,6 +2,8 @@
 
 Guidance for Claude Code working in this repo.
 
+> **Resuming?** Read `docs/STATUS.md` first — it's the live "where we are / what's next" doc.
+
 ## What this is
 
 A small bilingual (FR/EN) PWA for Colt & Valentine's wedding, Burgundy, August 2026. Guests play one mini-game a day for five days, scores accumulate, a champion is crowned at the reception. Private, friends-only, mobile-first, short-lived. Read `README.md`, then `docs/DECISIONS.md` for the architecture rationale.

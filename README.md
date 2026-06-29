@@ -54,4 +54,4 @@ Colt & Valentine own all game content and deliver it finished, in both languages
 
 ## Status
 
-Skeleton stage. Architecture, schema, content format, and scoring are defined. Game UIs and auth wiring are the build-out work. Content lands on a parallel track and should be locked ~2 weeks before launch (mid-July 2026).
+UI complete and playable in mock mode (no keys needed). Backend (name-pick sign-in, scoring, leaderboard) is written; connecting it to Supabase is the current step. See **`docs/STATUS.md`** for exactly where things stand and the next actions.
