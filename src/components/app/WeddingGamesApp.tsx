@@ -44,6 +44,43 @@ function CurrentScreen() {
   }
 }
 
+/** Games / Board switch for the desktop band (the mobile TabBar is hidden ≥1024px). */
+function DeskNav() {
+  const g = useGame();
+  const { t } = useLang();
+  const onBoard = g.s.screen === "leaderboard";
+  const item = (label: string, active: boolean, onClick: () => void) => (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "7px 18px",
+        borderRadius: 999,
+        border: 0,
+        cursor: "pointer",
+        background: active ? C.wine : "transparent",
+        color: active ? C.paper : C.wine,
+        font: "600 12px var(--font-sans)",
+        letterSpacing: ".02em",
+      }}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <nav
+      style={{
+        display: "inline-flex",
+        background: "rgba(110,44,62,.07)",
+        borderRadius: 999,
+        padding: 3,
+      }}
+    >
+      {item(t.gamesTab, !onBoard, g.goGames)}
+      {item(t.boardTab, onBoard, g.goBoard)}
+    </nav>
+  );
+}
+
 /** Desktop identity band (hidden below 1024px via CSS). */
 function DeskHead() {
   const g = useGame();
@@ -87,6 +124,7 @@ function DeskHead() {
           </div>
         </div>
       </div>
+      <DeskNav />
       <LangToggle />
     </header>
   );

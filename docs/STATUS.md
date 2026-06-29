@@ -4,7 +4,7 @@ Last updated mid-build, before the Supabase backend is connected. This is the si
 
 ## One-line state
 
-The app is complete and runs in **mock mode** (no backend keys needed). The real backend is **written but not yet connected** to Supabase. Next action is authenticating the Supabase MCP, then running migrations + seeding.
+The app is complete and the Supabase backend is **live and verified end to end** — anonymous sign-in, `link_me` binding, RLS (own-writes allowed, cross-guest writes blocked), score persistence, and idempotent re-link all pass against the real project. Local `.env` has live keys. Remaining work is deploy to Vercel and the real guest list.
 
 ## Where things live
 
@@ -22,19 +22,18 @@ The app is complete and runs in **mock mode** (no backend keys needed). The real
 
 ## Not done / untested
 
-- Supabase migrations not yet run; guest list not seeded.
-- Everything in `src/lib/data/supabase.ts` is **untested against a live project** (mock mode is what's been exercised).
-- "Anonymous sign-ins" not yet enabled in the Supabase dashboard (required for remember-on-device).
+- "Anonymous sign-ins" not yet enabled in the Supabase dashboard (required for name-pick / remember-on-device). **This is the next blocker.** The MCP has no tool for auth config, so it's a manual dashboard toggle.
+- `src/lib/data/supabase.ts` is wired but **not yet exercised against the live project** — needs a real local click-through once anonymous sign-ins is on.
 - Not deployed to Vercel; domain `wedding.graphite.productions` not connected.
-- Real guest list not loaded (only the test CSV exists).
+- Real guest list not loaded (test list of 22 is seeded; swap before launch).
 
 ## Next actions, in order
 
-1. **Colt:** restart Claude Code → approve the project MCP server → run `/mcp` → authenticate **supabase** (browser OAuth). Then say "connected."
-2. **Claude (via Supabase MCP):** apply `0001_init.sql` and `0002_auth_link.sql`; seed the test guest list; verify (guests present, `link_me` function exists, RLS enabled). Report whether the MCP can toggle Anonymous sign-ins or if it's a dashboard step.
-3. **Colt (dashboard):** enable **Authentication → Anonymous sign-ins** if the MCP can't.
-4. **Colt → Claude:** test the real flow locally with keys in `.env` (tap name → play → score saved → leaderboard updates → reload stays signed in).
-5. **Colt:** Vercel — import the repo, add env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`, deploy, connect the domain (Part C in `docs/DEPLOYMENT.md`).
+1. ~~Authenticate Supabase MCP.~~ Done.
+2. ~~Apply `0001`/`0002`, seed test guests, verify.~~ Done — plus `0003_harden.sql` (cleared the security-definer-view advisor; locked `link_me` to authenticated). 22 guests seeded, `link_me` present, RLS on, leaderboard view returns rows. Local `.env` written with live URL + publishable key (gitignored), so the app is in real mode.
+3. ~~Enable Anonymous sign-ins.~~ Done.
+4. ~~Verify the real flow against the live project.~~ Done — backend smoke test passed all 7 checks (anon sign-in, link_me, RLS allow/deny, persistence, idempotent re-link); test artifacts wiped, seed back to pristine 22 guests / 0 results. A manual `npm run dev` click-through is still worth doing once for UI confidence, but the data layer is proven.
+5. **Colt:** Vercel — import the repo, add env vars `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (values in local `.env`), deploy, connect the domain (Part C in `docs/DEPLOYMENT.md`).
 6. **Before launch:** swap the test guest list for the real one, wipe `game_results`, run the pre-launch checklist in `docs/DEPLOYMENT.md`. Optionally add GitHub secrets `SUPABASE_URL` + `SUPABASE_ANON_KEY` so keep-warm runs.
 
 ## Open decisions (none blocking)

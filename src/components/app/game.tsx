@@ -282,9 +282,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
         const guesses = [...w.guesses, w.current];
         const flipRow = guesses.length - 1;
         const done = { ...s.done };
+        const finished = w.current === ans || guesses.length >= 6;
         if (w.current === ans) done.wordle = guesses.length;
         else if (guesses.length >= 6) done.wordle = "X";
         merge({ wordle: { current: "", guesses, flipRow }, done });
+        // Wordle finishes on the same keypress that adds the last guess, so it
+        // submits here (the other games submit via finishGame on their Next tap).
+        // The "See your card" button only navigates — it must not be the writer.
+        if (finished) {
+          const elapsedMs = s.startedAt ? Date.now() - s.startedAt : 0;
+          const raw = buildRawResult(
+            "wordle",
+            { ...s, wordle: { ...s.wordle, guesses } },
+            lang.lang,
+            elapsedMs,
+          );
+          data.submitResult(raw).catch(() => {
+            /* best-effort; a wedding game shouldn't block on a write */
+          });
+        }
         setTimeout(
           () =>
             setS((prev) =>
