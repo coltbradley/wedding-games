@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Visual system (colors, fonts) lands when brand notes arrive — see docs/DECISIONS.md. */
+html,
+body {
+  -webkit-text-size-adjust: 100%;
+}

@@ -25,4 +25,22 @@ logs/
 tmp/
 .cache/
 
-# Stack-specific ignores get appended once the specs land
+# Node / Next.js
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Vercel / Supabase local
+.vercel/
+.supabase/
+
+# Real guest list (only the .example.csv is committed)
+supabase/seed/*.csv
+!supabase/seed/*.example.csv
+
+# Real game content stays private until launch (only .example.json is committed)
+# Uncomment if you want content kept out of git during authoring:
+# src/content/games/*.json
+# !src/content/games/*.example.json
