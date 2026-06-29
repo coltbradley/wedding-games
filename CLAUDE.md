@@ -24,12 +24,16 @@ Next.js (App Router) + Vercel, Supabase (Postgres + Auth), Tailwind, next-intl, 
 - `src/lib/games/` — content loader, schemas, the daily-unlock schedule (`registry.ts`).
 - `src/lib/scoring/` — normalization + leaderboard ranking. Model is in `docs/SCORING.md`.
 - `src/lib/share/` — Wordle-style share cards.
-- `src/lib/i18n/` — FR/EN, cookie-based locale, no URL prefix.
-- `src/lib/supabase/` — browser + server clients.
+- `src/components/app/` — the live UI: `WeddingGamesApp` (shell + screen router), `game.tsx` (client state machine, ported from the design prototype), `LangContext` (instant FR/EN toggle), `chrome.tsx`, `ScheduleList`.
+- `src/components/screens/` — one component per screen (Join, Hub, Wordle, Trivia, TwoTruths, Travel, Connections, Results, Leaderboard).
+- `src/lib/games/view.ts` — adapts content JSON into UI view models. `logic.ts` — Wordle eval + share-card text. `strings.ts` — bilingual UI copy. `design/tokens.ts` — colours.
+- `src/lib/supabase/` — browser + server clients (not yet wired into the UI; see below).
 - `supabase/migrations/` — schema. `supabase/seed/` — guest-list seeding.
 
 ## Conventions
 
+- The UI is a faithful port of the Claude Design prototype ("Wedding Games Design Brief"). Fonts: Cormorant Garamond (display) + Inter. Palette in `design/tokens.ts`. Watercolour image assets go in `public/assets/` (gradient fallbacks show until then).
+- Current build is client-side with a mock leaderboard (`src/lib/mock-leaderboard.ts`); real Supabase auth (email OTP), scoring, and leaderboard wiring is the next track. `src/lib/scoring` + `registry.ts` already hold the real server-side model.
 - Content is bundled at build time; guests + scores are the only runtime state.
 - Scores are computed server-side from submitted raw results — the client never reports its own final score.
 - "Speed" in scoring means session duration, never how early in the week someone played. Catch-up is always allowed and never penalized.
@@ -38,7 +42,7 @@ Next.js (App Router) + Vercel, Supabase (Postgres + Auth), Tailwind, next-intl, 
 
 ## Before committing
 
-`npm run typecheck && npm run lint && npm run content:check`
+`npm run typecheck && npm run content:check && npm run build`
 
 ## Voice for docs
 

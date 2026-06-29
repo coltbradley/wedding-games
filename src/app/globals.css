@@ -2,8 +2,256 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Visual system (colors, fonts) lands when brand notes arrive — see docs/DECISIONS.md. */
+/*
+  Design system ported from the Claude Design prototype
+  (Wedding Games - Prototype.dc.html). Watercolour Burgundy.
+  Fonts (Cormorant Garamond + Inter) are loaded via next/font in layout.tsx
+  and exposed as --font-serif / --font-sans.
+*/
+
+:root {
+  --paper: #fbf7f0;
+  --bg: #efe7da;
+  --surface: #e7dccb;
+  --wine: #6e2c3e;
+  --taupe: #a8927a;
+  --sage: #8a9a7b;
+  --ink: #2a2d32;
+  --gold: #d8b871;
+  --blue: #294c60;
+}
+
+* {
+  box-sizing: border-box;
+}
 html,
 body {
+  margin: 0;
+  background: var(--bg);
   -webkit-text-size-adjust: 100%;
+}
+body {
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  color: var(--ink);
+}
+
+.paper {
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+@keyframes bloom {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.78;
+  }
+}
+@keyframes bloomPulse {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(0.72);
+    opacity: 0.4;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes fadeUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes flip {
+  0% {
+    transform: rotateX(0);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0);
+  }
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+button:active {
+  transform: scale(0.97);
+}
+::selection {
+  background: rgba(110, 44, 62, 0.18);
+}
+
+.stage {
+  min-height: 100vh;
+}
+.deskhead,
+.rail {
+  display: none;
+}
+
+/* tablet & narrow desktop: framed card on the watercolour surface */
+@media (min-width: 760px) and (max-width: 1023.98px) {
+  .stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    min-height: 100vh;
+    background:
+      radial-gradient(
+        58% 52% at 16% 28%,
+        rgba(243, 158, 101, 0.16),
+        transparent 70%
+      ),
+      radial-gradient(
+        54% 56% at 84% 74%,
+        rgba(138, 154, 123, 0.2),
+        transparent 70%
+      ),
+      radial-gradient(
+        48% 48% at 72% 16%,
+        rgba(110, 44, 62, 0.1),
+        transparent 70%
+      ),
+      var(--surface);
+  }
+  .deskbody {
+    display: contents;
+  }
+  .paper {
+    height: min(880px, calc(100vh - 80px));
+    min-height: 0 !important;
+    max-height: 880px;
+    margin: 0 !important;
+    border-radius: 40px;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-shadow:
+      0 40px 90px rgba(90, 35, 51, 0.26),
+      0 0 0 1px rgba(110, 44, 62, 0.06);
+  }
+  .paper .screen {
+    min-height: 100% !important;
+  }
+  .paper::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+/* desktop: three-tier workspace — identity band, game stage, companion rail */
+@media (min-width: 1024px) {
+  .stage {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background:
+      radial-gradient(
+        46% 50% at 12% 22%,
+        rgba(243, 158, 101, 0.15),
+        transparent 68%
+      ),
+      radial-gradient(
+        44% 52% at 88% 78%,
+        rgba(138, 154, 123, 0.18),
+        transparent 70%
+      ),
+      radial-gradient(
+        40% 42% at 68% 10%,
+        rgba(110, 44, 62, 0.09),
+        transparent 70%
+      ),
+      var(--surface);
+  }
+  .deskhead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 48px;
+    width: 100%;
+    border-bottom: 1px solid rgba(110, 44, 62, 0.1);
+    background: rgba(251, 247, 240, 0.5);
+    backdrop-filter: blur(8px);
+  }
+  .deskbody {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 34px;
+    padding: 36px 40px 46px;
+    flex: 1;
+  }
+  .paper {
+    width: 472px !important;
+    max-width: 472px;
+    flex: none;
+    height: min(824px, calc(100vh - 172px));
+    min-height: 0 !important;
+    max-height: 840px;
+    margin: 0 !important;
+    border-radius: 32px;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-shadow:
+      0 30px 70px rgba(90, 35, 51, 0.2),
+      0 0 0 1px rgba(110, 44, 62, 0.05);
+  }
+  .paper .screen {
+    min-height: 100% !important;
+  }
+  .paper::-webkit-scrollbar {
+    width: 0;
+  }
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 344px;
+    flex: none;
+    height: min(824px, calc(100vh - 172px));
+    max-height: 840px;
+    overflow-y: auto;
+  }
+  .rail::-webkit-scrollbar {
+    width: 0;
+  }
+  .tabbar {
+    display: none !important;
+  }
+  .hubhead {
+    display: none !important;
+  }
+  .hub-days {
+    display: none !important;
+  }
 }

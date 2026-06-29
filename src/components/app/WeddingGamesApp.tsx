@@ -1,0 +1,161 @@
+"use client";
+
+import { LangProvider, useLang } from "./LangContext";
+import { GameProvider, useGame } from "./game";
+import { LangToggle, Loader } from "./chrome";
+import { ScheduleList } from "./ScheduleList";
+import { Join } from "../screens/Join";
+import { Hub } from "../screens/Hub";
+import { Wordle } from "../screens/Wordle";
+import { Trivia } from "../screens/Trivia";
+import { TwoTruths } from "../screens/TwoTruths";
+import { Travel } from "../screens/Travel";
+import { Connections } from "../screens/Connections";
+import { Results } from "../screens/Results";
+import { Leaderboard } from "../screens/Leaderboard";
+import { C } from "@/lib/design/tokens";
+
+function CurrentScreen() {
+  const { s } = useGame();
+  switch (s.screen) {
+    case "join":
+      return <Join />;
+    case "hub":
+      return <Hub />;
+    case "wordle":
+      return <Wordle />;
+    case "trivia":
+      return <Trivia />;
+    case "two-truths":
+      return <TwoTruths />;
+    case "travel":
+      return <Travel />;
+    case "connections":
+      return <Connections />;
+    case "results":
+      return <Results />;
+    case "leaderboard":
+      return <Leaderboard />;
+    default:
+      return <Hub />;
+  }
+}
+
+/** Desktop identity band (hidden below 1024px via CSS). */
+function DeskHead() {
+  const g = useGame();
+  const { t } = useLang();
+  return (
+    <header className="deskhead">
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div
+          style={{
+            font: "500 30px var(--font-serif)",
+            color: C.wine,
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+          }}
+        >
+          V <span style={{ fontStyle: "italic", color: C.taupe }}>&amp;</span> C
+        </div>
+        <div
+          style={{ width: 1, height: 28, background: "rgba(110,44,62,.18)" }}
+        />
+        <div>
+          <div
+            style={{
+              font: "500 18px var(--font-serif)",
+              color: C.ink,
+              lineHeight: 1.1,
+            }}
+          >
+            {t.hello}, {g.s.user}
+          </div>
+          <div
+            style={{
+              font: "600 10px var(--font-sans)",
+              letterSpacing: ".2em",
+              textTransform: "uppercase",
+              color: C.sage,
+              marginTop: 3,
+            }}
+          >
+            {t.date}
+          </div>
+        </div>
+      </div>
+      <LangToggle />
+    </header>
+  );
+}
+
+/** Desktop companion rail (hidden below 1024px via CSS). */
+function Rail() {
+  const { t } = useLang();
+  return (
+    <aside className="rail">
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 22,
+          padding: "20px 20px 12px",
+          boxShadow: "0 12px 34px rgba(90,35,51,.10)",
+          border: "1px solid rgba(110,44,62,.06)",
+        }}
+      >
+        <div
+          style={{
+            font: "600 12px var(--font-sans)",
+            letterSpacing: ".18em",
+            textTransform: "uppercase",
+            color: C.taupe,
+            marginBottom: 14,
+          }}
+        >
+          {t.theDays}
+        </div>
+        <ScheduleList compact />
+      </div>
+    </aside>
+  );
+}
+
+function Shell() {
+  const { s } = useGame();
+  const showChrome = s.screen !== "join";
+
+  return (
+    <div className="stage">
+      {showChrome && <DeskHead />}
+      <div className="deskbody">
+        <div
+          className="paper"
+          style={{
+            maxWidth: 430,
+            width: "100%",
+            margin: "0 auto",
+            minHeight: "100vh",
+            position: "relative",
+            color: C.ink,
+            overflow: "hidden",
+            boxShadow: "0 0 60px rgba(90,35,51,.10)",
+          }}
+        >
+          {s.loading && <Loader />}
+          <CurrentScreen />
+        </div>
+        {showChrome && <Rail />}
+      </div>
+    </div>
+  );
+}
+
+export function WeddingGamesApp() {
+  return (
+    <LangProvider>
+      <GameProvider>
+        <Shell />
+      </GameProvider>
+    </LangProvider>
+  );
+}

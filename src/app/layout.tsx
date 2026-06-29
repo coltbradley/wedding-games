@@ -1,12 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
-import { resolveLocale } from "@/lib/i18n/request";
+import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
 
+const serif = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const sans = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Our Wedding Games",
-  description: "A new game each day, for our guests.",
+  title: "Colt & Valentine — Wedding Games",
+  description: "A new little game each day, for our guests.",
   manifest: "/manifest.webmanifest",
   robots: { index: false, follow: false },
 };
@@ -15,24 +28,17 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1, // mobile-first; no accidental zoom on inputs
-  themeColor: "#1a1a2e",
+  themeColor: "#6E2C3E",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const locale = await resolveLocale();
-  const messages = await getMessages();
-
   return (
-    <html lang={locale}>
-      <body>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
+    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
