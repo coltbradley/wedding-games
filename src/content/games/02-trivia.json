@@ -1,0 +1,85 @@
+{
+  "id": "trivia",
+  "day": 2,
+  "title": { "en": "How well do you know us?", "fr": "Tu nous connais bien ?" },
+  "questions": [
+    {
+      "prompt": {
+        "en": "Where did Colt and Valentine first meet?",
+        "fr": "Où Colt et Valentine se sont-ils rencontrés ?"
+      },
+      "choices": [
+        { "en": "At a friend's wedding", "fr": "Au mariage d'un ami" },
+        { "en": "On a dating app", "fr": "Sur une app de rencontre" },
+        { "en": "At a coffee shop", "fr": "Dans un café" },
+        { "en": "Through work", "fr": "Par le travail" }
+      ],
+      "answerIndex": 0
+    },
+    {
+      "prompt": {
+        "en": "Which city did they live in together first?",
+        "fr": "Dans quelle ville ont-ils d'abord vécu ensemble ?"
+      },
+      "choices": [
+        { "en": "Paris", "fr": "Paris" },
+        { "en": "San Francisco", "fr": "San Francisco" },
+        { "en": "New York", "fr": "New York" },
+        { "en": "Lyon", "fr": "Lyon" }
+      ],
+      "answerIndex": 1
+    },
+    {
+      "prompt": {
+        "en": "What did they cook on their very first date?",
+        "fr": "Qu'ont-ils cuisiné lors de leur tout premier rendez-vous ?"
+      },
+      "choices": [
+        { "en": "Pasta", "fr": "Des pâtes" },
+        { "en": "Tacos", "fr": "Des tacos" },
+        { "en": "A roast chicken", "fr": "Un poulet rôti" },
+        { "en": "Nothing, they ordered in", "fr": "Rien, ils ont commandé" }
+      ],
+      "answerIndex": 2
+    },
+    {
+      "prompt": {
+        "en": "Who said 'I love you' first?",
+        "fr": "Qui a dit « je t'aime » en premier ?"
+      },
+      "choices": [
+        { "en": "Colt", "fr": "Colt" },
+        { "en": "Valentine", "fr": "Valentine" },
+        { "en": "They said it at once", "fr": "Ils l'ont dit en même temps" },
+        { "en": "Nobody remembers", "fr": "Personne ne s'en souvient" }
+      ],
+      "answerIndex": 1
+    },
+    {
+      "prompt": {
+        "en": "Where did Colt propose?",
+        "fr": "Où Colt a-t-il fait sa demande ?"
+      },
+      "choices": [
+        { "en": "On a beach", "fr": "Sur une plage" },
+        { "en": "At home", "fr": "À la maison" },
+        { "en": "On a hike", "fr": "En randonnée" },
+        { "en": "In Burgundy", "fr": "En Bourgogne" }
+      ],
+      "answerIndex": 2
+    },
+    {
+      "prompt": {
+        "en": "What's the one chore they always argue about?",
+        "fr": "Quelle corvée les fait toujours se disputer ?"
+      },
+      "choices": [
+        { "en": "The dishes", "fr": "La vaisselle" },
+        { "en": "Laundry", "fr": "Le linge" },
+        { "en": "Taking out trash", "fr": "Sortir les poubelles" },
+        { "en": "Making the bed", "fr": "Faire le lit" }
+      ],
+      "answerIndex": 0
+    }
+  ]
+}

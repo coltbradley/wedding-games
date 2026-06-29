@@ -1,0 +1,7 @@
+{
+  "id": "wordle",
+  "day": 1,
+  "title": { "en": "Today's word", "fr": "Le mot du jour" },
+  "answer": { "en": "VOWED", "fr": "NOCES" },
+  "hint": { "en": "What August 5th is all about", "fr": "Ce que le 5 août célèbre" }
+}

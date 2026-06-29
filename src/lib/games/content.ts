@@ -1,25 +1,23 @@
 import { GameContent } from "./types";
 import type { GameId } from "./types";
 
-/**
- * Loads and validates authored game content from src/content/games.
- * Real content files are <id>.json; *.example.json files are samples and are ignored.
- * Validation failures throw — a malformed game fails the build, never ships.
- */
+import wordle from "@/content/games/01-wordle.json";
+import trivia from "@/content/games/02-trivia.json";
+import twoTruths from "@/content/games/03-two-truths.json";
+import travel from "@/content/games/04-travel.json";
+import connections from "@/content/games/05-connections.json";
 
-// Bundled at build time. Glob is resolved by the bundler.
-const modules = import.meta.glob<{ default: unknown }>(
-  "../../content/games/*.json",
-  {
-    eager: true,
-  },
-);
+/**
+ * Loads and validates authored game content. Each file is imported explicitly
+ * and parsed through the zod schema, so a malformed game fails the build rather
+ * than shipping broken. To add or swap content, edit the file and (if new) add
+ * an import here. Authoring format: docs/CONTENT-FORMAT.md.
+ */
+const RAW: unknown[] = [wordle, trivia, twoTruths, travel, connections];
 
 const byId = new Map<GameId, GameContent>();
-
-for (const [path, mod] of Object.entries(modules)) {
-  if (path.includes(".example.")) continue;
-  const parsed = GameContent.parse((mod as { default: unknown }).default);
+for (const raw of RAW) {
+  const parsed = GameContent.parse(raw);
   byId.set(parsed.id, parsed);
 }
 

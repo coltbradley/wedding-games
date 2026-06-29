@@ -1,5 +1,5 @@
-email,display_name,preferred_locale
-sarah.martin@example.com,Sarah M.,en
-sarah.thomas@orange.fr,Sarah T.,fr
-jean.dupont@free.fr,Jean Dupont,fr
-amelia.brown@gmail.com,Amelia,en
+email,display_name,preferred_locale,first_name,side,rsvp_status
+sarah.martin@example.com,Sarah M,en,Sarah,groom,confirmed
+sarah.thomas@orange.fr,Sarah T,fr,Sarah,bride,confirmed
+jean.dupont@free.fr,Jean D,fr,Jean,bride,pending
+amelia.brown@gmail.com,Amelia B,en,Amelia,groom,confirmed

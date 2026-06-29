@@ -1,0 +1,23 @@
+{
+  "id": "connections",
+  "day": 5,
+  "title": { "en": "Connections", "fr": "Connexions" },
+  "grids": {
+    "en": {
+      "groups": [
+        { "name": "Our cats", "level": 0, "members": ["LUNA", "MILO", "BEAR", "SHADOW"] },
+        { "name": "Honeymoon stops", "level": 1, "members": ["KANDY", "GALLE", "ELLA", "YALA"] },
+        { "name": "French cheeses", "level": 2, "members": ["BRIE", "COMTE", "CHEVRE", "BLEU"] },
+        { "name": "___ party", "level": 3, "members": ["HOUSE", "BLOCK", "DINNER", "BACHELOR"] }
+      ]
+    },
+    "fr": {
+      "groups": [
+        { "name": "Nos chats", "level": 0, "members": ["LUNA", "MILO", "BEAR", "SHADOW"] },
+        { "name": "Villes du Sri Lanka", "level": 1, "members": ["KANDY", "GALLE", "ELLA", "YALA"] },
+        { "name": "Fromages", "level": 2, "members": ["BRIE", "COMTE", "CHEVRE", "BLEU"] },
+        { "name": "Fleurs de mariage", "level": 3, "members": ["ROSE", "PIVOINE", "LILAS", "IRIS"] }
+      ]
+    }
+  }
+}

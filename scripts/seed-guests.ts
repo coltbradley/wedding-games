@@ -20,17 +20,30 @@ if (!url || !serviceKey) {
 const [header, ...lines] = readFileSync(csvPath, "utf8").trim().split("\n");
 const cols = header.split(",").map((c) => c.trim());
 
+// Columns the guests table knows about. Any others in the CSV (first_name aside,
+// e.g. internal working columns) are ignored, so the content team can keep extra
+// columns without breaking seeding.
+const KNOWN = [
+  "email",
+  "display_name",
+  "first_name",
+  "preferred_locale",
+  "side",
+  "rsvp_status",
+];
+
 const guests = lines.map((line) => {
   const cells = line.split(",").map((c) => c.trim());
   const row = Object.fromEntries(cols.map((c, i) => [c, cells[i]])) as Record<
     string,
     string
   >;
-  return {
-    email: row.email.toLowerCase(),
-    display_name: row.display_name,
-    preferred_locale: row.preferred_locale || null,
-  };
+  const guest: Record<string, string> = {};
+  for (const key of KNOWN) {
+    if (row[key])
+      guest[key] = key === "email" ? row[key].toLowerCase() : row[key];
+  }
+  return guest;
 });
 
 const supabase = createClient(url, serviceKey);

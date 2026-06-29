@@ -1,0 +1,17 @@
+{
+  "id": "travel",
+  "day": 4,
+  "title": { "en": "France or Sri Lanka?", "fr": "France ou Sri Lanka ?" },
+  "items": [
+    { "label": { "en": "Tea plantations", "fr": "Plantations de thé" }, "image": "travel/tea.jpg", "answer": "srilanka" },
+    { "label": { "en": "Escargots", "fr": "Escargots" }, "image": "travel/escargots.jpg", "answer": "france" },
+    { "label": { "en": "Tuk-tuks", "fr": "Tuk-tuks" }, "image": "travel/tuktuk.jpg", "answer": "srilanka" },
+    { "label": { "en": "Fresh croissants", "fr": "Croissants frais" }, "image": "travel/croissant.jpg", "answer": "france" },
+    { "label": { "en": "Elephant safari", "fr": "Safari à éléphants" }, "image": "travel/elephant.jpg", "answer": "srilanka" },
+    { "label": { "en": "Lavender fields", "fr": "Champs de lavande" }, "image": "travel/lavender.jpg", "answer": "france" },
+    { "label": { "en": "Surfing at Arugam Bay", "fr": "Surf à Arugam Bay" }, "image": "travel/surf.jpg", "answer": "srilanka" },
+    { "label": { "en": "Vineyard châteaux", "fr": "Châteaux viticoles" }, "image": "travel/vineyard.jpg", "answer": "france" },
+    { "label": { "en": "Cinnamon groves", "fr": "Plantations de cannelle" }, "image": "travel/cinnamon.jpg", "answer": "srilanka" },
+    { "label": { "en": "A fresh baguette", "fr": "Une baguette fraîche" }, "image": "travel/baguette.jpg", "answer": "france" }
+  ]
+}

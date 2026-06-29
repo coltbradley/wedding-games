@@ -9,7 +9,10 @@ create table if not exists guests (
   id               uuid primary key default gen_random_uuid(),
   email            text unique not null,
   display_name     text not null,
+  first_name       text,                       -- for greetings ("Bienvenue, Colt")
   preferred_locale text check (preferred_locale in ('en', 'fr')),
+  side             text,                        -- couple / bride / groom (free-form, for future team views)
+  rsvp_status      text not null default 'confirmed',
   created_at       timestamptz not null default now()
 );
 

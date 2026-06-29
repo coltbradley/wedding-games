@@ -1,7 +1,0 @@
-{
-  "id": "wordle",
-  "day": 1,
-  "title": { "en": "Today's word", "fr": "Le mot du jour" },
-  "answer": { "en": "VALEN", "fr": "AMOUR" },
-  "hint": { "en": "Five letters, very us", "fr": "Cinq lettres, très nous" }
-}

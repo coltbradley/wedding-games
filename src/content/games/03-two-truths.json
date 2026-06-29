@@ -1,0 +1,47 @@
+{
+  "id": "two-truths",
+  "day": 3,
+  "title": { "en": "Two truths and a lie", "fr": "Deux vérités, un mensonge" },
+  "rounds": [
+    {
+      "statements": [
+        { "en": "Valentine grew up in Burgundy", "fr": "Valentine a grandi en Bourgogne" },
+        { "en": "Colt once lived in Japan", "fr": "Colt a vécu au Japon" },
+        { "en": "They got engaged in 2024", "fr": "Ils se sont fiancés en 2024" }
+      ],
+      "lieIndex": 1
+    },
+    {
+      "statements": [
+        { "en": "Colt has run a marathon", "fr": "Colt a couru un marathon" },
+        { "en": "Valentine speaks four languages", "fr": "Valentine parle quatre langues" },
+        { "en": "They have two cats", "fr": "Ils ont deux chats" }
+      ],
+      "lieIndex": 2
+    },
+    {
+      "statements": [
+        { "en": "Their first trip together was to Italy", "fr": "Leur premier voyage ensemble était en Italie" },
+        { "en": "Colt proposed on a hike", "fr": "Colt a fait sa demande en randonnée" },
+        { "en": "Valentine hates chocolate", "fr": "Valentine déteste le chocolat" }
+      ],
+      "lieIndex": 2
+    },
+    {
+      "statements": [
+        { "en": "They had a civil wedding in San Francisco", "fr": "Ils se sont mariés civilement à San Francisco" },
+        { "en": "Colt plays the piano", "fr": "Colt joue du piano" },
+        { "en": "Their honeymoon is in Sri Lanka", "fr": "Leur lune de miel est au Sri Lanka" }
+      ],
+      "lieIndex": 1
+    },
+    {
+      "statements": [
+        { "en": "Valentine makes the better coffee", "fr": "Valentine fait le meilleur café" },
+        { "en": "Colt is afraid of heights", "fr": "Colt a le vertige" },
+        { "en": "They met in 2015", "fr": "Ils se sont rencontrés en 2015" }
+      ],
+      "lieIndex": 2
+    }
+  ]
+}
