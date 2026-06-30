@@ -159,6 +159,8 @@ button:active {
     border-radius: 40px;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     box-shadow:
       0 40px 90px rgba(90, 35, 51, 0.26),
       0 0 0 1px rgba(110, 44, 62, 0.06);
@@ -226,6 +228,8 @@ button:active {
     border-radius: 32px;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     box-shadow:
       0 30px 70px rgba(90, 35, 51, 0.2),
       0 0 0 1px rgba(110, 44, 62, 0.05);
@@ -245,6 +249,8 @@ button:active {
     height: min(824px, calc(100vh - 172px));
     max-height: 840px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .rail::-webkit-scrollbar {
     width: 0;

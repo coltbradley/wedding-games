@@ -2,7 +2,7 @@
 
 import { LangProvider, useLang } from "./LangContext";
 import { GameProvider, useGame } from "./game";
-import { LangToggle, Loader } from "./chrome";
+import { LangToggle, Loader, useRubberBand } from "./chrome";
 import { ScheduleList } from "./ScheduleList";
 import { Join } from "../screens/Join";
 import { NamePick } from "../screens/NamePick";
@@ -165,12 +165,14 @@ function Shell() {
   const { s } = useGame();
   const preAuth = s.screen === "join" || s.screen === "namepick";
   const showChrome = !preAuth;
+  const paperRef = useRubberBand<HTMLDivElement>();
 
   return (
     <div className="stage">
       {showChrome && <DeskHead />}
       <div className="deskbody">
         <div
+          ref={paperRef}
           className="paper"
           style={{
             maxWidth: 430,
@@ -179,7 +181,11 @@ function Shell() {
             minHeight: "100vh",
             position: "relative",
             color: C.ink,
-            overflow: "hidden",
+            // Mobile scrolls the window, so the paper must NOT be a scroll
+            // container or the sticky hero/tab bar would pin to it (which never
+            // scrolls) instead of the viewport. Tablet/desktop override this to
+            // overflow:auto via media query and become the scroller themselves.
+            overflow: "visible",
             boxShadow: "0 0 60px rgba(90,35,51,.10)",
           }}
         >

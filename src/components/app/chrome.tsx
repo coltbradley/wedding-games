@@ -41,6 +41,132 @@ export function useCollapse(distance = 130) {
 /** Linear interpolate between a (p=0) and b (p=1). */
 export const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
 
+/**
+ * Rubber-band overscroll. Attach the returned ref to the scroll surface; when
+ * the user drags or flicks past the top or bottom edge, the surface follows
+ * with diminishing give and then springs back. Works whether the surface
+ * itself scrolls (the tablet/desktop `.paper`, an overflow:auto box) or the
+ * window does (mobile, where `.paper` is overflow:visible). Normal scrolling is
+ * never intercepted — the gesture is only caught once you are already at an
+ * edge and still pushing past it. Honours prefers-reduced-motion.
+ */
+export function useRubberBand<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const LIMIT = 92; // furthest the surface can be pulled, in px
+    let offset = 0;
+    let rawPull = 0;
+    let touchY = 0;
+    let pulling = false;
+    let wheelTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // The element that actually scrolls depends on the breakpoint, so resolve it
+    // per gesture rather than caching it.
+    const scroller = (): HTMLElement | Window => {
+      const oy = getComputedStyle(el).overflowY;
+      return oy === "auto" || oy === "scroll" ? el : window;
+    };
+    const edges = () => {
+      const sc = scroller();
+      if (sc === window) {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        return {
+          atTop: window.scrollY <= 0,
+          atBottom: window.scrollY >= max - 1,
+        };
+      }
+      const e = sc as HTMLElement;
+      const max = e.scrollHeight - e.clientHeight;
+      return { atTop: e.scrollTop <= 0, atBottom: e.scrollTop >= max - 1 };
+    };
+    // Diminishing give: asymptotically approaches LIMIT however hard you pull.
+    const damp = (raw: number) => {
+      const dir = Math.sign(raw);
+      const x = Math.abs(raw);
+      return dir * LIMIT * (1 - 1 / (x / LIMIT + 1));
+    };
+    const set = (v: number) => {
+      offset = v;
+      el.style.transform = v ? `translate3d(0,${v.toFixed(2)}px,0)` : "";
+    };
+    const release = () => {
+      pulling = false;
+      rawPull = 0;
+      if (wheelTimer) {
+        clearTimeout(wheelTimer);
+        wheelTimer = null;
+      }
+      if (offset === 0) {
+        el.style.willChange = "";
+        return;
+      }
+      el.style.transition = "transform .55s cubic-bezier(.22,1.3,.4,1)";
+      set(0);
+      const done = () => {
+        el.style.transition = "";
+        el.style.willChange = "";
+        el.removeEventListener("transitionend", done);
+      };
+      el.addEventListener("transitionend", done);
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchY = e.touches[0].clientY;
+      rawPull = 0;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      const dy = e.touches[0].clientY - touchY;
+      const { atTop, atBottom } = edges();
+      if ((atTop && dy > 0) || (atBottom && dy < 0)) {
+        if (!pulling) {
+          pulling = true;
+          el.style.transition = "";
+          el.style.willChange = "transform";
+        }
+        rawPull = dy;
+        e.preventDefault(); // take over from native scroll/bounce at the edge
+        set(damp(rawPull));
+      } else if (pulling) {
+        release();
+      }
+    };
+    const onWheel = (e: WheelEvent) => {
+      const { atTop, atBottom } = edges();
+      const dy = e.deltaY;
+      if ((atTop && dy < 0) || (atBottom && dy > 0)) {
+        el.style.transition = "";
+        el.style.willChange = "transform";
+        rawPull += -dy; // pushing up at the top reads as a positive pull
+        e.preventDefault();
+        set(damp(rawPull));
+        if (wheelTimer) clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(release, 90); // spring back when the flick stops
+      } else if (offset !== 0 && !wheelTimer) {
+        set(0);
+      }
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", release, { passive: true });
+    el.addEventListener("touchcancel", release, { passive: true });
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", release);
+      el.removeEventListener("touchcancel", release);
+      el.removeEventListener("wheel", onWheel);
+      if (wheelTimer) clearTimeout(wheelTimer);
+    };
+  }, []);
+  return ref;
+}
+
 /** EN / FR pill toggle. */
 export function LangToggle({ pad = "5px 12px" }: { pad?: string }) {
   const { lang, toggle } = useLang();
