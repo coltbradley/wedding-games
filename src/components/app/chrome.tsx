@@ -57,7 +57,7 @@ export function useRubberBand<T extends HTMLElement>() {
     if (!el) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const LIMIT = 92; // furthest the surface can be pulled, in px
+    const LIMIT = 40; // furthest the surface can be pulled, in px (kept subtle)
     let offset = 0;
     let rawPull = 0;
     let touchY = 0;
@@ -104,7 +104,7 @@ export function useRubberBand<T extends HTMLElement>() {
         el.style.willChange = "";
         return;
       }
-      el.style.transition = "transform .55s cubic-bezier(.22,1.3,.4,1)";
+      el.style.transition = "transform .42s cubic-bezier(.22,1,.36,1)";
       set(0);
       const done = () => {
         el.style.transition = "";
@@ -220,18 +220,14 @@ export function GameHero({
   onBack: () => void;
 }) {
   const { t } = useLang();
-  // Tall watercolour at the top; collapses to a slim sticky band as the game
-  // content scrolls under it. Stays put on screens that don't overflow.
-  const { ref, p } = useCollapse(150);
-  const height = lerp(188, 92, p);
+  // A secondary watercolour banner at the top of each game screen. It scrolls
+  // away with the content (not sticky) so the game itself is never tucked behind
+  // the image.
   return (
     <div
-      ref={ref}
       style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 6,
-        height,
+        position: "relative",
+        height: 156,
         flex: "none",
         overflow: "hidden",
       }}
@@ -254,7 +250,7 @@ export function GameHero({
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          objectPosition: `center ${lerp(38, 50, p)}%`,
+          objectPosition: "center 42%",
         }}
       />
       <div
@@ -294,8 +290,6 @@ export function GameHero({
           position: "absolute",
           left: 20,
           bottom: 11,
-          transform: `scale(${lerp(1, 0.82, p)})`,
-          transformOrigin: "left bottom",
         }}
       >
         <div
