@@ -42,7 +42,7 @@ A small, mobile-first PWA for a known, closed audience playing for one week. Opt
 
 ## Request flow for playing a game
 
-1. Guest opens today's game; the client records the start time for the speed bonus.
+1. Guest opens today's game; the client records the start time (session duration is a leaderboard tiebreaker).
 2. Guest plays entirely client-side (content is already bundled).
 3. On finish, the client builds a raw result (correctness fraction, elapsed ms, per-game detail), normalizes it through the shared scoring lib (`src/lib/scoring`), and upserts the `game_results` row. The write is retried once and the result card shows saved / didn't-save honestly.
 4. Client renders the score and a Wordle-style share card (`src/lib/games/logic.ts`).

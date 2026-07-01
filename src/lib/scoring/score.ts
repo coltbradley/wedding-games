@@ -6,20 +6,15 @@ const clamp = (n: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, n));
 
 /**
- * Normalize a raw result to a 0..1000 score: correctness dominates, speed is a
- * capped bonus that decays to 0 at the game's targetSeconds. "Speed" is the
- * session duration, never how early in the week it was played. See docs/SCORING.md.
+ * Normalize a raw result to a 0..1000 score: correctness is the game (up to
+ * 900), plus a flat 100 for playing on the day the game opened. Speed never
+ * earns points — total session time is only a leaderboard tiebreaker.
+ * See docs/SCORING.md.
  */
 export function scoreResult(raw: RawResult): number {
-  const meta = SCHEDULE.find((g) => g.id === raw.gameId);
-  const targetMs = (meta?.targetSeconds ?? 120) * 1000;
-
   const correctness = clamp(raw.correctness, 0, 1) * SCORING.CORRECTNESS_MAX;
-
-  const elapsed = Math.max(raw.elapsedMs, SCORING.MIN_PLAUSIBLE_MS);
-  const speed = clamp(1 - elapsed / targetMs, 0, 1) * SCORING.SPEED_MAX;
-
-  return Math.round(correctness + speed);
+  const dayOf = raw.onDay ? SCORING.DAY_OF_BONUS : 0;
+  return Math.round(correctness) + dayOf;
 }
 
 // The deterministic tiebreaker sort (docs/SCORING.md) lives in the

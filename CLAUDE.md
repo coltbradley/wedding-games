@@ -37,9 +37,9 @@ Next.js (App Router) + Vercel, Supabase (Postgres + Auth), Tailwind, a lightweig
 - The data layer (`src/lib/data`) auto-selects its backend by env keys. With `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` set, it uses the live Supabase backend (name-pick sign-in, scoring, leaderboard); without them it falls back to the mock client for local play. The backend is wired and verified end to end against the live project.
 - Content is bundled at build time; guests + scores are the only runtime state.
 - Scoring runs on the client through the shared deterministic lib (`src/lib/scoring` from `result.ts` raw results) and the score is written with the row. Honor-system by design (RLS owns-row + DB range constraints as backstop); moving it into an edge function is the upgrade path if trust is ever needed. Don't describe it as server-side.
-- A finished game never re-submits: saved results rehydrate on boot, a finished game reopens its result card, and `finishGame` guards double-taps. Keep it that way — replays would overwrite scores and gift speed bonuses.
+- A finished game never re-submits: saved results rehydrate on boot, a finished game reopens its result card, and `finishGame` guards double-taps. Keep it that way — replays would overwrite scores.
 - Wordle answers and the Connections grid are pinned to the language the game started in (`wordle.lang` / `conn.lang`); the FR/EN toggle must never re-grade an in-progress or finished board.
-- "Speed" in scoring means session duration, never how early in the week someone played. Catch-up is always allowed and never penalized.
+- Speed never earns points — session time is only a leaderboard tiebreaker. Finishing a game on the day it opens earns a flat bonus (100 of 1000); catch-up is always allowed and costs only that bonus. Model in `docs/SCORING.md`.
 - Daily unlock is enforced in the client from `registry.ts` (`unlockedThroughDay`). `NEXT_PUBLIC_UNLOCK_ALL=1` opens everything for dev/preview; never in production.
 - Sign-in: name-pick + remember-on-device (anonymous auth, then the `link_me` RPC binds the device to a guest), with an optional shared event code (`NEXT_PUBLIC_EVENT_CODE`, default off). Email OTP is a deliberate non-goal. See `docs/DECISIONS.md` #2.
 - Timezone is fixed to Europe/Paris for unlocks, regardless of device.

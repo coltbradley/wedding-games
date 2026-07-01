@@ -125,6 +125,7 @@ export type GameContent = z.infer<typeof GameContent>;
 export interface RawResult {
   gameId: GameId;
   correctness: number; // 0..1, computed per game
-  elapsedMs: number; // session duration, start-of-game to submit
+  elapsedMs: number; // session duration (tiebreaker only, never points)
+  onDay: boolean; // finished on the day the game opened → flat bonus
   detail: Record<string, unknown>; // per-game specifics for the share card
 }

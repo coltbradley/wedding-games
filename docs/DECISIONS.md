@@ -56,9 +56,11 @@ The original email-first analysis follows. Decided after research (see sources a
 
 ---
 
-## 5. Scoring: normalized per game, speed = play duration not calendar earliness
+## 5. Scoring: normalized per game, day-of bonus instead of a speed race
 
-**Decision:** Every game contributes a comparable normalized score. Speed is rewarded, but "speed" means _how long the play session took_, never _how early in the week you played_. Catch-up players are not punished. Cumulative champion + daily winners + a played-every-day streak badge + a deterministic tiebreaker. Full formula in `docs/SCORING.md`.
+**Decision:** Every game contributes a comparable normalized score (up to 900 for correctness). Speed earns no points — session time is only a tiebreaker — and instead finishing a game on the day it opens earns a flat 100. Catch-up stays allowed and costs exactly that bonus. Cumulative champion + per-game boards + a played-every-day streak badge + deterministic tiebreakers. Full formula in `docs/SCORING.md`.
+
+> Originally a 700/300 correctness/speed split. Changed 2026-07-01: a per-second speed bonus structurally favored fast readers over the all-ages, two-language guest list and pushed a twitchy vibe. The day-of bonus rewards the same thing the product actually wants (the daily ritual) without racing anyone, and a timezone grace window (until 09:00 Paris) keeps it fair for US guests.
 
 **Why:** Directly serves fairness for late joiners (a stated goal) and keeps the reception reveal from being a muddle.
 
@@ -92,7 +94,7 @@ The original email-first analysis follows. Decided after research (see sources a
 
 ## 9. Daily unlock on Paris time, catch-up always allowed
 
-**Decision:** One game unlocks per day keyed to Europe/Paris. Past games stay playable for catch-up; future games are locked (dimmed rows with their open date; the hub features today's game, or a countdown card before launch). Scoring is unaffected by _when_ you play (see #5).
+**Decision:** One game unlocks per day keyed to Europe/Paris. Past games stay playable for catch-up; future games are locked (dimmed rows with their open date; the hub features today's game, or a countdown card before launch). Playing on the day earns the flat day-of bonus; catching up later costs only that (see #5).
 
 **Why:** Scarcity creates the shared daily ritual (anticipation), while catch-up keeps late arrivals in the game.
 

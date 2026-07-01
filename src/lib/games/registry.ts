@@ -10,16 +10,14 @@ import type { Lang } from "../strings";
 export interface GameMeta {
   id: GameId;
   day: number; // 1..5
-  /** Target solve time in seconds; the speed bonus decays to 0 here. See docs/SCORING.md. */
-  targetSeconds: number;
 }
 
 export const SCHEDULE: GameMeta[] = [
-  { id: "wordle", day: 1, targetSeconds: 120 },
-  { id: "trivia", day: 2, targetSeconds: 90 },
-  { id: "two-truths", day: 3, targetSeconds: 90 },
-  { id: "travel", day: 4, targetSeconds: 75 },
-  { id: "connections", day: 5, targetSeconds: 180 },
+  { id: "wordle", day: 1 },
+  { id: "trivia", day: 2 },
+  { id: "two-truths", day: 3 },
+  { id: "travel", day: 4 },
+  { id: "connections", day: 5 },
 ];
 
 const LAUNCH_DATE = process.env.NEXT_PUBLIC_LAUNCH_DATE ?? "2026-07-31";
@@ -80,6 +78,33 @@ export function unlockDateLabel(day: number, lang: Lang): string {
 export function isUnlocked(gameId: GameId, now: Date = new Date()): boolean {
   const meta = SCHEDULE.find((g) => g.id === gameId);
   return meta ? meta.day <= unlockedThroughDay(now) : false;
+}
+
+/** Current hour (0-23) in Paris. */
+function parisHour(now: Date): number {
+  return Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: TZ,
+      hour: "2-digit",
+      hourCycle: "h23",
+    }).format(now),
+  );
+}
+
+/**
+ * Is `now` the day this game opened? Feeds the day-of bonus (docs/SCORING.md).
+ * "The day" is the Paris calendar date, extended to 09:00 Paris the next
+ * morning so far-west guests keep their whole evening (midnight California
+ * is exactly 09:00 Paris in summer) — the ritual is "played it on its day",
+ * not "beat the Paris midnight".
+ */
+export function isUnlockDay(gameId: GameId, now: Date = new Date()): boolean {
+  const meta = SCHEDULE.find((g) => g.id === gameId);
+  if (!meta) return false;
+  const unlock = Date.parse(LAUNCH_DATE) + (meta.day - 1) * 86_400_000;
+  const today = Date.parse(parisDateToday(now));
+  if (today === unlock) return true;
+  return today === unlock + 86_400_000 && parisHour(now) < 9;
 }
 
 export function todaysGame(now: Date = new Date()): GameMeta | null {

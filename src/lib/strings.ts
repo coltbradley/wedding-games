@@ -97,6 +97,7 @@ export interface Strings {
   yesCountry: string; // {c}
   itsCountry: string; // {c}
   // persistence + errors
+  dayOfBonus: string; // {pts}
   scoreSaved: string;
   scoreSaving: string;
   scoreSaveFailed: string;
@@ -200,6 +201,7 @@ export const STR: Record<Lang, Strings> = {
     captionScoreFriends: "Spoiler-free — your friends only see the score.",
     yesCountry: "Yes — {c}!",
     itsCountry: "It’s {c}.",
+    dayOfBonus: "Played on the day · +{pts}",
     scoreSaved: "Score saved",
     scoreSaving: "Saving your score…",
     scoreSaveFailed: "Your score didn’t save",
@@ -301,6 +303,7 @@ export const STR: Record<Lang, Strings> = {
     captionScoreFriends: "Sans spoiler — tes amis ne voient que le score.",
     yesCountry: "Oui — {c} !",
     itsCountry: "C’est {c}.",
+    dayOfBonus: "Joué le jour même · +{pts}",
     scoreSaved: "Score enregistré",
     scoreSaving: "Enregistrement…",
     scoreSaveFailed: "Ton score n’a pas été enregistré",

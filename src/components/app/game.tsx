@@ -68,6 +68,8 @@ interface State {
   lastGame: GameId;
   board: Board;
   done: Done;
+  /** Which finished games earned the day-of bonus (for the result card). */
+  dayBonus: Partial<Record<GameId, boolean>>;
   startedAt: number | null;
   unlockedDay: number;
   save: SaveState;
@@ -109,6 +111,7 @@ function initialState(): State {
     lastGame: "wordle",
     board: "all",
     done: {},
+    dayBonus: {},
     startedAt: null,
     unlockedDay: unlockedThroughDay(),
     save: null,
@@ -146,10 +149,12 @@ function initialState(): State {
 function rehydrated(results: MyResult[]): Partial<State> {
   const patch: Partial<State> = {};
   const done: Done = {};
+  const dayBonus: Partial<Record<GameId, boolean>> = {};
   const asLang = (v: unknown): Lang | null =>
     v === "fr" || v === "en" ? v : null;
   for (const r of results) {
     const d = r.detail;
+    dayBonus[r.gameId] = d.onDay === true;
     if (r.gameId === "wordle") {
       const guesses = Array.isArray(d.guesses)
         ? (d.guesses as string[]).filter((x) => typeof x === "string")
@@ -193,6 +198,7 @@ function rehydrated(results: MyResult[]): Partial<State> {
     }
   }
   patch.done = done;
+  patch.dayBonus = dayBonus;
   return patch;
 }
 
@@ -367,6 +373,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       return {
         ...prev,
         done: { ...prev.done, [id]: scoreOfWith(prev, id) },
+        dayBonus: { ...prev.dayBonus, [id]: raw.onDay },
         lastGame: id,
         screen: "results",
       };
@@ -423,7 +430,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     openGame: (id) => {
       // A finished game re-opens its result card — replaying would overwrite
-      // the saved score (and gift a speed bonus).
+      // the saved score.
       if (s.done[id] != null) {
         merge({ lastGame: id, screen: "results" });
         return;
@@ -504,6 +511,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
             elapsedMs,
           );
           persist(raw);
+          merge({ dayBonus: { ...s.dayBonus, wordle: raw.onDay } });
         }
         setTimeout(
           () =>

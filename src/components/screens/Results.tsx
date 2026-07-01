@@ -14,6 +14,7 @@ import {
 } from "@/lib/games/view";
 import { evalRow, CONN_STYLE } from "@/lib/games/logic";
 import { C, SQ } from "@/lib/design/tokens";
+import { SCORING } from "@/lib/scoring/config";
 import { fmt } from "@/lib/strings";
 
 const COK = C.sage;
@@ -327,6 +328,24 @@ export function Results() {
         >
           Colt &amp; Valentine · 05.08
         </div>
+        {s.dayBonus[lg] && (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              marginTop: 12,
+              padding: "5px 13px",
+              borderRadius: 999,
+              background: "rgba(138,154,123,.14)",
+              border: "1px solid rgba(138,154,123,.4)",
+              font: "600 12px var(--font-sans)",
+              color: "#5C6B4E",
+            }}
+          >
+            ✿ {fmt(t.dayOfBonus, { pts: SCORING.DAY_OF_BONUS })}
+          </div>
+        )}
       </div>
 
       {save && (
