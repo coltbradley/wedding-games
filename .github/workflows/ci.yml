@@ -1,0 +1,23 @@
+# CI: the same three checks CLAUDE.md requires before committing.
+# Vercel builds are the deploy gate; this catches breakage on every push/PR
+# without waiting for a deploy.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run content:check
+      - run: npm run build

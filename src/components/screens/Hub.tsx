@@ -5,17 +5,24 @@ import { useLang } from "../app/LangContext";
 import { LangToggle, TabBar, useCollapse, lerp } from "../app/chrome";
 import { ScheduleList } from "../app/ScheduleList";
 import { GAME_META, tx } from "@/lib/games/view";
+import { SCHEDULE, unlockDateLabel } from "@/lib/games/registry";
 import { C } from "@/lib/design/tokens";
+import { fmt } from "@/lib/strings";
 
 export function Hub() {
   const g = useGame();
   const { lang, t } = useLang();
-  const wordle = GAME_META.wordle;
+  // Today's game follows the unlock schedule; before launch there is no game
+  // yet and the hero becomes a countdown card.
+  const day = g.s.unlockedDay;
+  const featured = SCHEDULE.find((x) => x.day === day) ?? null;
+  const meta = featured ? GAME_META[featured.id] : null;
+  const featuredDone = featured ? g.s.done[featured.id] != null : false;
   // Bigger today's-game image that eases down a touch as the hub scrolls.
   const { ref: imgRef, p } = useCollapse(220);
 
   return (
-    <div className="screen" style={{ minHeight: "100vh", paddingBottom: 88 }}>
+    <div className="screen" style={{ paddingBottom: 88 }}>
       <div
         className="hubhead"
         style={{
@@ -54,7 +61,7 @@ export function Hub() {
             margin: "8px 0 10px",
           }}
         >
-          {t.todays} · {t.dayWord} 1
+          {meta ? `${t.todays} · ${t.dayWord} ${meta.day}` : t.comingSoonTitle}
         </div>
 
         <div
@@ -84,7 +91,7 @@ export function Hub() {
               }}
             />
             <img
-              src={wordle.hero}
+              src={meta ? meta.hero : "/assets/chateau.jpg"}
               alt=""
               style={{
                 position: "absolute",
@@ -103,73 +110,67 @@ export function Hub() {
                   "linear-gradient(180deg,rgba(1,28,47,.04) 0%,transparent 35%,rgba(42,30,20,.45) 100%)",
               }}
             />
-            <div
-              style={{
-                position: "absolute",
-                left: 20,
-                bottom: 14,
-                font: "500 13px var(--font-sans)",
-                color: "#fff",
-                textShadow: "0 1px 4px rgba(90,35,51,.5)",
-              }}
-            >
-              {t.wordleSub}
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                right: 18,
-                top: 16,
-                background: "rgba(255,255,255,.85)",
-                borderRadius: 999,
-                padding: "5px 12px",
-                font: "600 11px var(--font-sans)",
-                color: C.wine,
-                letterSpacing: ".08em",
-              }}
-            >
-              {t.dayWord} 1
-            </div>
+            {meta && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 18,
+                  top: 16,
+                  background: "rgba(255,255,255,.85)",
+                  borderRadius: 999,
+                  padding: "5px 12px",
+                  font: "600 11px var(--font-sans)",
+                  color: C.wine,
+                  letterSpacing: ".08em",
+                }}
+              >
+                {t.dayWord} {meta.day}
+              </div>
+            )}
           </div>
           <div style={{ padding: "18px 20px 20px" }}>
             <div
               style={{ font: "500 30px/1.05 var(--font-serif)", color: C.ink }}
             >
-              {tx(wordle.title, lang)}
+              {meta
+                ? tx(meta.title, lang)
+                : fmt(t.comingSoonSub, { date: unlockDateLabel(1, lang) })}
             </div>
-            <button
-              onClick={() => g.openGame("wordle")}
-              style={{
-                marginTop: 16,
-                width: "100%",
-                height: 54,
-                border: 0,
-                borderRadius: 16,
-                background: C.wine,
-                color: C.paper,
-                font: "600 16px var(--font-sans)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-              }}
-            >
-              {g.s.done.wordle != null ? t.resume : t.play}
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={C.paper}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            {meta && (
+              <button
+                onClick={() => g.openGame(meta.id)}
+                style={{
+                  marginTop: 16,
+                  width: "100%",
+                  height: 54,
+                  border: 0,
+                  borderRadius: 16,
+                  background: C.wine,
+                  color: C.paper,
+                  font: "600 16px var(--font-sans)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                }}
               >
-                <circle cx="12" cy="12" r="9" opacity=".4" />
-                <line x1="8" y1="12" x2="15" y2="12" />
-                <polyline points="12 9 15 12 12 15" />
-              </svg>
-            </button>
+                {featuredDone ? t.resume : t.play}
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={C.paper}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="9" opacity=".4" />
+                  <line x1="8" y1="12" x2="15" y2="12" />
+                  <polyline points="12 9 15 12 12 15" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 

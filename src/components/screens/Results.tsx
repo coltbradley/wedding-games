@@ -13,19 +13,22 @@ import {
   wordleView,
 } from "@/lib/games/view";
 import { evalRow, CONN_STYLE } from "@/lib/games/logic";
-import { C } from "@/lib/design/tokens";
+import { C, SQ } from "@/lib/design/tokens";
+import { fmt } from "@/lib/strings";
 
-const COK = "#8A9A7B";
+const COK = C.sage;
 const CNO = "#CFC6B6";
-const SQ = {
-  correct: "#8A9A7B",
-  present: "#D8B871",
-  absent: "#C4BBA9",
-} as const;
 
-function Row({ colors }: { colors: string[] }) {
+function Row({ colors, dim }: { colors: string[]; dim?: boolean }) {
   return (
-    <div style={{ display: "flex", gap: 5, justifyContent: "center" }}>
+    <div
+      style={{
+        display: "flex",
+        gap: 5,
+        justifyContent: "center",
+        opacity: dim ? 0.38 : 1,
+      }}
+    >
       {colors.map((c, i) => (
         <i
           key={i}
@@ -42,6 +45,17 @@ function Row({ colors }: { colors: string[] }) {
   );
 }
 
+/** Verdict line for score-out-of-total games, shared across trivia/truths/travel. */
+function verdict(
+  frac: number,
+  t: { beautifullyDone: string; nicelyPlayed: string; nextTime: string },
+  top?: string,
+): string {
+  if (frac >= 0.8) return top ?? t.beautifullyDone;
+  if (frac >= 0.5) return t.nicelyPlayed;
+  return t.nextTime;
+}
+
 export function Results() {
   const g = useGame();
   const { lang, t } = useLang();
@@ -55,29 +69,21 @@ export function Results() {
   let title = "";
   let headline = "";
   let grid: ReactNode = null;
-  let caption =
-    lg === "travel"
-      ? lang === "fr"
-        ? "Le score — sans spoiler."
-        : "Just the score — no spoilers."
-      : lg === "connections" || lg === "wordle"
-        ? t.spoilerFree
-        : lang === "fr"
-          ? "Sans spoiler — tes amis ne voient que le score."
-          : "Spoiler-free — your friends only see the score.";
+  const caption =
+    lg === "connections" || lg === "wordle"
+      ? t.spoilerFree
+      : lg === "travel"
+        ? t.captionScoreOnly
+        : t.captionScoreFriends;
 
   if (lg === "wordle") {
-    const ans = wordleView(lang).answer;
+    const ans = wordleView(s.wordle.lang ?? lang).answer;
     const won = s.wordle.guesses.includes(ans);
     const tries = s.wordle.guesses.length;
     eyebrow = won
       ? `${t.solvedIn} ${tries} · ${t.dayWord} 1`
       : `${t.dayWord} 1`;
-    title = won
-      ? `Bravo, ${s.user}!`
-      : lang === "fr"
-        ? "La prochaine fois !"
-        : "Next time!";
+    title = won ? fmt(t.bravoName, { name: s.user }) : t.nextTime;
     headline = `${tx(meta.title, lang)} · ${won ? tries : "X"}/6`;
     grid = (
       <div
@@ -89,23 +95,19 @@ export function Results() {
         }}
       >
         {s.wordle.guesses.map((guess, ri) => (
-          <Row
-            key={ri}
-            colors={evalRow(guess, ans).map((x) => SQ[x as keyof typeof SQ])}
-          />
+          <Row key={ri} colors={evalRow(guess, ans).map((x) => SQ[x].bg)} />
         ))}
       </div>
     );
   } else if (lg === "connections") {
-    title =
-      s.conn.mistakes === 0
-        ? lang === "fr"
-          ? "Sans faute !"
-          : "Flawless!"
-        : lang === "fr"
-          ? "Terminé !"
-          : "Solved!";
-    headline = `${tx(meta.title, lang)} · ${s.conn.mistakes} ${t.mistakesWord}`;
+    const found = s.conn.solved.filter((x) => !x.revealed);
+    const failed = found.length < 4;
+    title = failed
+      ? t.nextTime
+      : s.conn.mistakes === 0
+        ? t.flawless
+        : t.solvedBang;
+    headline = `${tx(meta.title, lang)} · ${found.length}/4 · ${s.conn.mistakes} ${t.mistakesWord}`;
     grid = (
       <div
         style={{
@@ -116,7 +118,11 @@ export function Results() {
         }}
       >
         {s.conn.solved.map((sv, i) => (
-          <Row key={i} colors={Array(4).fill(CONN_STYLE[sv.g].bg)} />
+          <Row
+            key={i}
+            colors={Array(4).fill(CONN_STYLE[sv.g].bg)}
+            dim={sv.revealed}
+          />
         ))}
       </div>
     );
@@ -161,28 +167,16 @@ export function Results() {
         <div
           style={{
             font: "500 11px var(--font-sans)",
-            color: "#A8A49A",
+            color: C.stone,
             marginTop: 3,
           }}
         >
-          {lang === "fr" ? "bien placés" : "placed right"}
+          {t.placedRight}
         </div>
       </div>
     );
     const tot = items.length;
-    const frac = (score as number) / tot;
-    title =
-      frac >= 0.8
-        ? lang === "fr"
-          ? "Globe-trotteur !"
-          : "Well travelled!"
-        : frac >= 0.5
-          ? lang === "fr"
-            ? "Beau parcours."
-            : "Nicely played."
-          : lang === "fr"
-            ? "La prochaine fois !"
-            : "Next time!";
+    title = verdict((score as number) / tot, t, t.wellTravelled);
     headline = `${tx(meta.title, lang)} · ${score}/${tot} ${t.rightWord}`;
     grid = (
       <div
@@ -210,19 +204,7 @@ export function Results() {
       lg === "trivia"
         ? triviaView().map((q, i) => s.trivia.picks[i] === q.answerIndex)
         : twoTruthsView().map((r, i) => s.tt.picks[i] === r.lieIndex);
-    const frac = (score as number) / tot;
-    title =
-      frac >= 0.8
-        ? lang === "fr"
-          ? "Magnifique !"
-          : "Beautifully done!"
-        : frac >= 0.5
-          ? lang === "fr"
-            ? "Beau parcours."
-            : "Nicely played."
-          : lang === "fr"
-            ? "La prochaine fois !"
-            : "Next time!";
+    title = verdict((score as number) / tot, t);
     headline = `${tx(meta.title, lang)} · ${score}/${tot} ${t.rightWord}`;
     grid = (
       <div
@@ -238,11 +220,14 @@ export function Results() {
     );
   }
 
+  // Persistence status for THIS card only — a result card must be honest
+  // about whether the score actually landed (see docs/LESSONS.md).
+  const save = s.save?.id === lg ? s.save.st : null;
+
   return (
     <div
       className="screen"
       style={{
-        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -344,6 +329,42 @@ export function Results() {
         </div>
       </div>
 
+      {save && (
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            marginTop: 12,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            font: "500 13px var(--font-sans)",
+            color: save === "error" ? C.error : C.sage,
+          }}
+        >
+          {save === "saving" && t.scoreSaving}
+          {save === "saved" && `✓ ${t.scoreSaved}`}
+          {save === "error" && (
+            <>
+              {t.scoreSaveFailed}
+              <button
+                onClick={g.retrySave}
+                style={{
+                  background: "none",
+                  border: 0,
+                  padding: 0,
+                  color: C.wine,
+                  font: "600 13px var(--font-sans)",
+                  textDecoration: "underline",
+                }}
+              >
+                {t.retry}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       <div
         style={{
           position: "relative",
@@ -351,7 +372,7 @@ export function Results() {
           display: "flex",
           gap: 10,
           width: "100%",
-          marginTop: 22,
+          marginTop: save ? 14 : 22,
         }}
       >
         <button
@@ -401,12 +422,49 @@ export function Results() {
         </button>
       </div>
 
+      {s.shareFallback && (
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: "100%",
+            marginTop: 12,
+            textAlign: "left",
+          }}
+        >
+          <div
+            style={{
+              font: "500 12px var(--font-sans)",
+              color: C.slate,
+              marginBottom: 6,
+            }}
+          >
+            {t.shareManual}
+          </div>
+          <pre
+            style={{
+              margin: 0,
+              padding: "12px 14px",
+              background: "#fff",
+              border: "1px solid rgba(110,44,62,.12)",
+              borderRadius: 12,
+              font: "500 13px/1.5 var(--font-sans)",
+              whiteSpace: "pre-wrap",
+              userSelect: "all",
+              WebkitUserSelect: "all",
+            }}
+          >
+            {s.shareFallback}
+          </pre>
+        </div>
+      )}
+
       <div
         style={{
           position: "relative",
           zIndex: 1,
           font: "400 13px var(--font-sans)",
-          color: "#A8A49A",
+          color: C.stone,
           marginTop: 14,
           textAlign: "center",
         }}

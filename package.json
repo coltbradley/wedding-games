@@ -13,7 +13,6 @@
     "seed:guests": "tsx scripts/seed-guests.ts"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.45.0",
     "@vercel/analytics": "^2.0.1",
     "next": "^15.0.0",

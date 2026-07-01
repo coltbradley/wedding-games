@@ -12,14 +12,30 @@ export function Leaderboard() {
   const board = g.s.board;
 
   // Per-game boards are head-to-head on a single game (same scoring ceiling);
-  // all-time is the cumulative total across every game played.
-  const scoreFor = (p: (typeof g.s.leaders)[number]) =>
-    board === "all" ? p.all : (p.byGame[board] ?? 0);
-
+  // all-time is the cumulative total across every game played. Ordering is
+  // deterministic (docs/SCORING.md): points, then games played, then total
+  // time, then earliest first result, then name — no coin-flip ties at the
+  // reception reveal.
   const leaders = g.s.leaders
-    .filter((p) => scoreFor(p) > 0)
-    .map((p) => ({ name: p.name, val: scoreFor(p), me: p.me }))
-    .sort((a, b) => b.val - a.val)
+    .filter((p) => (board === "all" ? p.gamesPlayed > 0 : p.byGame[board]))
+    .map((p) => ({
+      name: p.name,
+      val: board === "all" ? p.all : (p.byGame[board]?.score ?? 0),
+      elapsed:
+        board === "all" ? p.totalElapsedMs : (p.byGame[board]?.elapsedMs ?? 0),
+      games: p.gamesPlayed,
+      first: p.firstResultAt,
+      me: p.me,
+      id: p.id,
+    }))
+    .sort(
+      (a, b) =>
+        b.val - a.val ||
+        b.games - a.games ||
+        a.elapsed - b.elapsed ||
+        a.first.localeCompare(b.first) ||
+        a.name.localeCompare(b.name),
+    )
     .map((p, i) => ({ ...p, rank: i + 1 }));
 
   const boards: Board[] = ["all", ...GAME_ORDER];
@@ -29,7 +45,6 @@ export function Leaderboard() {
     <div
       className="screen"
       style={{
-        minHeight: "100vh",
         paddingBottom: 88,
         display: "flex",
         flexDirection: "column",
@@ -104,11 +119,85 @@ export function Leaderboard() {
           gap: 8,
         }}
       >
-        {!g.s.boardLoading && leaders.length === 0 && (
+        {g.s.boardLoading &&
+          [0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              aria-hidden
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 13,
+                background: "#fff",
+                border: "1px solid rgba(110,44,62,.06)",
+                borderRadius: 14,
+                padding: "11px 15px",
+                animation: "boardPulse 1.3s ease-in-out infinite",
+                animationDelay: `${i * 0.12}s`,
+              }}
+            >
+              <div style={{ width: 22 }} />
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  background: C.bg,
+                }}
+              />
+              <div
+                style={{
+                  flex: 1,
+                  height: 12,
+                  borderRadius: 6,
+                  background: C.bg,
+                  maxWidth: 140,
+                }}
+              />
+              <div
+                style={{
+                  width: 48,
+                  height: 12,
+                  borderRadius: 6,
+                  background: C.bg,
+                }}
+              />
+            </div>
+          ))}
+
+        {!g.s.boardLoading && g.s.boardErr && (
+          <div style={{ textAlign: "center", marginTop: 28 }}>
+            <div
+              style={{
+                color: C.stone,
+                font: "400 14px var(--font-sans)",
+                marginBottom: 12,
+              }}
+            >
+              {t.boardFailed}
+            </div>
+            <button
+              onClick={g.goBoard}
+              style={{
+                height: 40,
+                padding: "0 22px",
+                border: "1.5px solid rgba(110,44,62,.25)",
+                borderRadius: 999,
+                background: "transparent",
+                color: C.wine,
+                font: "600 13px var(--font-sans)",
+              }}
+            >
+              {t.retry}
+            </button>
+          </div>
+        )}
+
+        {!g.s.boardLoading && !g.s.boardErr && leaders.length === 0 && (
           <div
             style={{
               textAlign: "center",
-              color: "#A8A49A",
+              color: C.stone,
               font: "400 14px var(--font-sans)",
               marginTop: 28,
             }}
@@ -116,79 +205,84 @@ export function Leaderboard() {
             {t.noScoreYet}
           </div>
         )}
-        {leaders.map((p, i) => (
-          <div
-            key={p.name}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 13,
-              background: p.me ? "rgba(110,44,62,.07)" : "#fff",
-              border: p.me
-                ? "1.5px solid #6E2C3E"
-                : "1px solid rgba(110,44,62,.08)",
-              borderRadius: 14,
-              padding: "11px 15px",
-            }}
-          >
+
+        {!g.s.boardLoading &&
+          leaders.map((p, i) => (
             <div
+              key={p.id}
               style={{
-                width: 22,
-                textAlign: "center",
-                font: "600 15px var(--font-sans)",
-                color: p.me ? C.wine : "#A8A49A",
-              }}
-            >
-              {p.rank}
-            </div>
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                flex: "none",
-                borderRadius: "50%",
-                background: p.me ? C.wine : i < 3 ? C.sage : "#E7DAC9",
-                color: p.me || i < 3 ? C.paper : C.wine,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                font: "500 18px var(--font-serif)",
+                gap: 13,
+                background: p.me ? "rgba(110,44,62,.07)" : "#fff",
+                border: p.me
+                  ? "1.5px solid #6E2C3E"
+                  : "1px solid rgba(110,44,62,.08)",
+                borderRadius: 14,
+                padding: "11px 15px",
               }}
             >
-              {p.name.charAt(0)}
+              <div
+                style={{
+                  width: 22,
+                  textAlign: "center",
+                  font: "600 15px var(--font-sans)",
+                  color: p.me ? C.wine : C.stone,
+                }}
+              >
+                {p.rank}
+              </div>
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  flex: "none",
+                  borderRadius: "50%",
+                  background: p.me ? C.wine : i < 3 ? C.sage : C.sand,
+                  color: p.me || i < 3 ? C.paper : C.wine,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  font: "500 18px var(--font-serif)",
+                }}
+              >
+                {p.name.charAt(0)}
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  font: "600 15px var(--font-sans)",
+                  color: p.me ? C.wine : C.ink,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {p.name}{" "}
+                {p.me && (
+                  <span
+                    style={{
+                      font: "600 11px var(--font-sans)",
+                      letterSpacing: ".05em",
+                      textTransform: "uppercase",
+                      color: C.sage,
+                    }}
+                  >
+                    {t.you}
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  font: "600 15px var(--font-sans)",
+                  color: p.me ? C.wine : C.slate,
+                }}
+              >
+                {p.val} {t.pts}
+              </div>
             </div>
-            <div
-              style={{
-                flex: 1,
-                minWidth: 0,
-                font: "600 15px var(--font-sans)",
-                color: p.me ? C.wine : C.ink,
-              }}
-            >
-              {p.name}{" "}
-              {p.me && (
-                <span
-                  style={{
-                    font: "600 11px var(--font-sans)",
-                    letterSpacing: ".05em",
-                    textTransform: "uppercase",
-                    color: C.sage,
-                  }}
-                >
-                  {t.you}
-                </span>
-              )}
-            </div>
-            <div
-              style={{
-                font: "600 15px var(--font-sans)",
-                color: p.me ? C.wine : "#6E6E6A",
-              }}
-            >
-              {p.val} {t.pts}
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       <TabBar active="board" onGames={g.goGames} onBoard={g.goBoard} />

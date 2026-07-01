@@ -263,13 +263,13 @@ export function GameHero({
       />
       <button
         onClick={onBack}
-        aria-label="Back"
+        aria-label={t.backAria}
         style={{
           position: "absolute",
-          left: 16,
-          top: 14,
-          width: 32,
-          height: 32,
+          left: 14,
+          top: 12,
+          width: 40,
+          height: 40,
           border: 0,
           borderRadius: 999,
           background: "rgba(255,255,255,.85)",
@@ -340,7 +340,8 @@ export function TabBar({
         background: "rgba(251,247,240,.92)",
         backdropFilter: "blur(10px)",
         borderTop: "1px solid rgba(110,44,62,.1)",
-        padding: "10px 28px 16px",
+        // Keep the labels above the iPhone home indicator in standalone mode.
+        padding: "10px 28px calc(16px + env(safe-area-inset-bottom, 0px))",
       }}
     >
       <button

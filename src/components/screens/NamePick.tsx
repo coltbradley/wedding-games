@@ -32,7 +32,6 @@ export function NamePick() {
     <div
       className="screen"
       style={{
-        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         padding: "26px 24px 28px",
@@ -47,7 +46,7 @@ export function NamePick() {
       >
         <button
           onClick={g.goJoin}
-          aria-label="Back"
+          aria-label={t.backAria}
           style={{
             width: 34,
             height: 34,
@@ -78,7 +77,7 @@ export function NamePick() {
       <div
         style={{
           font: "400 14px var(--font-sans)",
-          color: "#8A8A84",
+          color: C.slate,
           marginTop: 6,
         }}
       >
@@ -101,7 +100,6 @@ export function NamePick() {
               background: "#fff",
               font: "500 16px var(--font-sans)",
               color: C.ink,
-              outline: "none",
             }}
           />
           <div
@@ -114,50 +112,114 @@ export function NamePick() {
               gap: 8,
             }}
           >
-            {filtered.map((r) => (
-              <button
-                key={r.id}
-                onClick={() => g.selectGuest(r.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 13,
-                  textAlign: "left",
-                  width: "100%",
-                  background: "#fff",
-                  border: "1px solid rgba(110,44,62,.10)",
-                  borderRadius: 14,
-                  padding: "11px 15px",
-                }}
-              >
+            {g.s.rosterLoading &&
+              [0, 1, 2, 3, 4, 5].map((i) => (
                 <div
+                  key={i}
+                  aria-hidden
                   style={{
-                    width: 38,
-                    height: 38,
-                    flex: "none",
-                    borderRadius: "50%",
-                    background: "#E7DAC9",
-                    color: C.wine,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    font: "500 18px var(--font-serif)",
+                    gap: 13,
+                    background: "#fff",
+                    border: "1px solid rgba(110,44,62,.06)",
+                    borderRadius: 14,
+                    padding: "11px 15px",
+                    animation: "boardPulse 1.3s ease-in-out infinite",
+                    animationDelay: `${i * 0.12}s`,
                   }}
                 >
-                  {r.name.charAt(0)}
+                  <div
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: "50%",
+                      background: C.bg,
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 120 + (i % 3) * 30,
+                      height: 12,
+                      borderRadius: 6,
+                      background: C.bg,
+                    }}
+                  />
                 </div>
+              ))}
+            {!g.s.rosterLoading && g.s.rosterErr && (
+              <div style={{ textAlign: "center", marginTop: 20 }}>
                 <div
-                  style={{ font: "600 15px var(--font-sans)", color: C.ink }}
+                  style={{
+                    color: C.stone,
+                    font: "400 14px var(--font-sans)",
+                    marginBottom: 12,
+                  }}
                 >
-                  {r.name}
+                  {t.rosterFailed}
                 </div>
-              </button>
-            ))}
-            {filtered.length === 0 && (
+                <button
+                  onClick={g.goNamePick}
+                  style={{
+                    height: 40,
+                    padding: "0 22px",
+                    border: "1.5px solid rgba(110,44,62,.25)",
+                    borderRadius: 999,
+                    background: "transparent",
+                    color: C.wine,
+                    font: "600 13px var(--font-sans)",
+                  }}
+                >
+                  {t.retry}
+                </button>
+              </div>
+            )}
+            {!g.s.rosterLoading &&
+              !g.s.rosterErr &&
+              filtered.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => g.selectGuest(r.id)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 13,
+                    textAlign: "left",
+                    width: "100%",
+                    background: "#fff",
+                    border: "1px solid rgba(110,44,62,.10)",
+                    borderRadius: 14,
+                    padding: "11px 15px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 38,
+                      height: 38,
+                      flex: "none",
+                      borderRadius: "50%",
+                      background: C.sand,
+                      color: C.wine,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      font: "500 18px var(--font-serif)",
+                    }}
+                  >
+                    {r.name.charAt(0)}
+                  </div>
+                  <div
+                    style={{ font: "600 15px var(--font-sans)", color: C.ink }}
+                  >
+                    {r.name}
+                  </div>
+                </button>
+              ))}
+            {!g.s.rosterLoading && !g.s.rosterErr && filtered.length === 0 && (
               <div
                 style={{
                   textAlign: "center",
-                  color: "#A8A49A",
+                  color: C.stone,
                   font: "400 14px var(--font-sans)",
                   marginTop: 20,
                 }}
@@ -224,7 +286,7 @@ export function NamePick() {
               <label
                 style={{
                   font: "600 13px var(--font-sans)",
-                  color: "#6E6E6A",
+                  color: C.slate,
                   marginTop: 24,
                 }}
               >
@@ -240,14 +302,13 @@ export function NamePick() {
                   marginTop: 8,
                   width: "100%",
                   height: 52,
-                  border: `1.5px solid ${errText ? "#C0584A" : "rgba(110,44,62,.18)"}`,
+                  border: `1.5px solid ${errText ? C.error : "rgba(110,44,62,.18)"}`,
                   borderRadius: 14,
                   padding: "0 16px",
                   background: "#fff",
                   font: "500 18px var(--font-sans)",
                   letterSpacing: ".1em",
                   color: C.ink,
-                  outline: "none",
                 }}
               />
             </>
@@ -256,7 +317,7 @@ export function NamePick() {
             <div
               style={{
                 font: "400 13px var(--font-sans)",
-                color: "#C0584A",
+                color: C.error,
                 marginTop: 8,
               }}
             >
@@ -266,6 +327,7 @@ export function NamePick() {
 
           <button
             onClick={g.submitName}
+            disabled={g.s.signingIn}
             style={{
               marginTop: "auto",
               width: "100%",
@@ -275,9 +337,31 @@ export function NamePick() {
               background: C.wine,
               color: C.paper,
               font: "600 16px var(--font-sans)",
+              opacity: g.s.signingIn ? 0.65 : 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
             }}
           >
-            {requiresEventCode ? t.signIn : t.thatsMe}
+            {g.s.signingIn && (
+              <span
+                aria-hidden
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: "50%",
+                  border: "2px solid rgba(251,247,240,.35)",
+                  borderTopColor: C.paper,
+                  animation: "spin .7s linear infinite",
+                }}
+              />
+            )}
+            {g.s.signingIn
+              ? t.loadingWord
+              : requiresEventCode
+                ? t.signIn
+                : t.thatsMe}
           </button>
         </div>
       )}

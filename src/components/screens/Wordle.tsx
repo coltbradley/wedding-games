@@ -107,7 +107,7 @@ export function Wordle() {
   return (
     <div
       className="screen"
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      style={{ display: "flex", flexDirection: "column" }}
     >
       <GameHero
         hero={GAME_META.wordle.hero}

@@ -98,6 +98,31 @@ body {
     transform: rotateX(0);
   }
 }
+@keyframes boardPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Vestibular-safe: collapse decorative motion when the OS asks for it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
 button {
   font-family: inherit;
@@ -106,12 +131,44 @@ button {
 button:active {
   transform: scale(0.97);
 }
+button:disabled {
+  cursor: default;
+}
+button:disabled:active {
+  transform: none;
+}
+/* One focus language for the whole app (keyboard / switch access). */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--wine);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+input:focus-visible {
+  outline: none;
+  border-color: var(--wine) !important;
+  box-shadow: 0 0 0 3px rgba(110, 44, 62, 0.14);
+}
 ::selection {
   background: rgba(110, 44, 62, 0.18);
 }
 
+/* Every screen fills the visible viewport — dvh tracks the iOS toolbar so
+   bottom-anchored UI (Wordle keyboard, CTAs) is never cut off. */
+.screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.paper {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 .stage {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 .deskhead,
 .rail {

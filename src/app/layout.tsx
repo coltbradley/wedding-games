@@ -23,13 +23,20 @@ export const metadata: Metadata = {
   description: "A new little game each day, for our guests.",
   manifest: "/manifest.webmanifest",
   robots: { index: false, follow: false },
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1, // mobile-first; no accidental zoom on inputs
-  themeColor: "#6E2C3E",
+  // No maximumScale: inputs are 16px+ (so iOS won't auto-zoom) and guests who
+  // need pinch-zoom should have it. viewportFit exposes the safe-area insets
+  // the tab bar pads against in standalone mode.
+  viewportFit: "cover",
+  themeColor: "#FBF7F0",
 };
 
 export default function RootLayout({

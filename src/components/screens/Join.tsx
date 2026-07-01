@@ -12,7 +12,7 @@ export function Join() {
   return (
     <div
       className="screen"
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      style={{ display: "flex", flexDirection: "column" }}
     >
       <div
         style={{
@@ -32,7 +32,7 @@ export function Join() {
         />
         <img
           src="/assets/chateau-hero.jpg"
-          alt="Watercolour château in Burgundy"
+          alt={t.chateauAlt}
           style={{
             position: "absolute",
             inset: 0,
@@ -181,7 +181,7 @@ export function Join() {
           <p
             style={{
               font: "400 13px/1.5 var(--font-sans)",
-              color: "#A8A49A",
+              color: C.stone,
               marginTop: 12,
               textAlign: "center",
             }}

@@ -9,12 +9,15 @@ import { CONN_STYLE, C } from "@/lib/design/tokens";
 export function Connections() {
   const g = useGame();
   const { lang, t } = useLang();
-  const groups = connectionsView(lang);
   const c = g.s.conn;
+  // The grid stays in the language it was dealt in — a mid-game FR/EN toggle
+  // must not swap the words under an in-progress selection.
+  const groups = connectionsView(c.lang ?? lang);
   const solvedG = c.solved.map((x) => x.g);
   const canSubmit = c.selected.length === 4;
 
-  // Solved bands first, then the loose tile grid.
+  // Solved bands first, then the loose tile grid. Groups shown by the
+  // end-of-game reveal (not found by the player) render dimmed.
   const solvedBands = c.solved.map((sv) => {
     const stl = CONN_STYLE[sv.g];
     const grp = groups[sv.g];
@@ -28,6 +31,7 @@ export function Connections() {
           padding: "10px 8px",
           textAlign: "center",
           animation: "pop .4s ease",
+          opacity: sv.revealed ? 0.55 : 1,
         }}
       >
         <div
@@ -91,7 +95,7 @@ export function Connections() {
   return (
     <div
       className="screen"
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      style={{ display: "flex", flexDirection: "column" }}
     >
       <GameHero
         hero={GAME_META.connections.hero}
@@ -110,7 +114,7 @@ export function Connections() {
         <div
           style={{
             font: "500 14px var(--font-sans)",
-            color: "#6E6E6A",
+            color: C.slate,
             textAlign: "center",
             marginBottom: 14,
           }}
@@ -161,7 +165,7 @@ export function Connections() {
             marginTop: 14,
             font: "500 12px var(--font-sans)",
             letterSpacing: ".04em",
-            color: "#A8A49A",
+            color: C.stone,
           }}
         >
           {t.mistakesWord} · {c.mistakes}
@@ -196,7 +200,7 @@ export function Connections() {
               height: 52,
               borderRadius: 16,
               background: canSubmit ? C.wine : "rgba(110,44,62,.10)",
-              color: canSubmit ? C.paper : "#A89E92",
+              color: canSubmit ? C.paper : C.stone,
               border: 0,
               font: "600 15px var(--font-sans)",
             }}

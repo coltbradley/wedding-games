@@ -17,28 +17,30 @@ A small bilingual (FR/EN) PWA for Colt & Valentine's wedding, Burgundy, August 2
 
 ## Stack
 
-Next.js (App Router) + Vercel, Supabase (Postgres + Auth), Tailwind, next-intl, PWA. Don't over-engineer — this is a one-week event for a few dozen known people.
+Next.js (App Router) + Vercel, Supabase (Postgres + Auth), Tailwind, a lightweight FR/EN context (no i18n framework), PWA. Don't over-engineer — this is a one-week event for a few dozen known people.
 
 ## Where things live
 
 - `docs/` — architecture, decisions (ADR-style), scoring, content format, deployment. Source of truth for the "why."
 - `src/content/games/*.json` — bilingual game content, authored by Colt & Valentine, validated by zod (`src/lib/games/types.ts`). NOT in the database.
-- `src/lib/games/` — content loader, schemas, the daily-unlock schedule (`registry.ts`).
-- `src/lib/scoring/` — normalization + leaderboard ranking. Model is in `docs/SCORING.md`.
-- `src/lib/share/` — Wordle-style share cards.
+- `src/lib/games/` — content loader, schemas, the daily-unlock schedule (`registry.ts`), raw-result building (`result.ts`), Wordle eval + share-card text (`logic.ts`).
+- `src/lib/scoring/` — normalization. Model is in `docs/SCORING.md`; the tiebreaker sort lives in the Leaderboard screen.
 - `src/components/app/` — the live UI: `WeddingGamesApp` (shell + screen router), `game.tsx` (client state machine, ported from the design prototype), `LangContext` (instant FR/EN toggle), `chrome.tsx`, `ScheduleList`.
 - `src/components/screens/` — one component per screen (Join, Hub, Wordle, Trivia, TwoTruths, Travel, Connections, Results, Leaderboard).
 - `src/lib/games/view.ts` — adapts content JSON into UI view models. `logic.ts` — Wordle eval + share-card text. `strings.ts` — bilingual UI copy. `design/tokens.ts` — colours.
-- `src/lib/supabase/` — browser + server clients, wired into the data layer (`src/lib/data/supabase.ts`).
+- `src/lib/supabase/` — the browser client, wired into the data layer (`src/lib/data/supabase.ts`). There is deliberately no server client (see LESSONS on cookies).
 - `supabase/migrations/` — schema. `supabase/seed/` — guest-list seeding.
 
 ## Conventions
 
 - The UI is a faithful port of the Claude Design prototype ("Wedding Games Design Brief"). Fonts: Cormorant Garamond (display) + Inter. Palette in `design/tokens.ts`. Watercolour image assets go in `public/assets/` (gradient fallbacks show until then).
-- The data layer (`src/lib/data`) auto-selects its backend by env keys. With `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` set, it uses the live Supabase backend (name-pick sign-in, scoring, leaderboard); without them it falls back to the mock client (`src/lib/mock-leaderboard.ts`) for local play. The backend is wired and verified end to end against the live project. `src/lib/scoring` + `registry.ts` hold the server-side model.
+- The data layer (`src/lib/data`) auto-selects its backend by env keys. With `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` set, it uses the live Supabase backend (name-pick sign-in, scoring, leaderboard); without them it falls back to the mock client for local play. The backend is wired and verified end to end against the live project.
 - Content is bundled at build time; guests + scores are the only runtime state.
-- Scores are computed server-side from submitted raw results — the client never reports its own final score.
+- Scoring runs on the client through the shared deterministic lib (`src/lib/scoring` from `result.ts` raw results) and the score is written with the row. Honor-system by design (RLS owns-row + DB range constraints as backstop); moving it into an edge function is the upgrade path if trust is ever needed. Don't describe it as server-side.
+- A finished game never re-submits: saved results rehydrate on boot, a finished game reopens its result card, and `finishGame` guards double-taps. Keep it that way — replays would overwrite scores and gift speed bonuses.
+- Wordle answers and the Connections grid are pinned to the language the game started in (`wordle.lang` / `conn.lang`); the FR/EN toggle must never re-grade an in-progress or finished board.
 - "Speed" in scoring means session duration, never how early in the week someone played. Catch-up is always allowed and never penalized.
+- Daily unlock is enforced in the client from `registry.ts` (`unlockedThroughDay`). `NEXT_PUBLIC_UNLOCK_ALL=1` opens everything for dev/preview; never in production.
 - Sign-in: name-pick + remember-on-device (anonymous auth, then the `link_me` RPC binds the device to a guest), with an optional shared event code (`NEXT_PUBLIC_EVENT_CODE`, default off). Email OTP is a deliberate non-goal. See `docs/DECISIONS.md` #2.
 - Timezone is fixed to Europe/Paris for unlocks, regardless of device.
 

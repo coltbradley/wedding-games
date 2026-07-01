@@ -110,6 +110,19 @@ export function travelView(): TravelItem[] {
     : [];
 }
 
+/**
+ * Rounds/questions per game, derived from the content itself so an edit to a
+ * JSON file can never leave the UI counting wrong. Wordle's 6 is the guess
+ * budget; connections' 4 is the group count — both structural, not content.
+ */
+export function gameTotal(id: GameId): number {
+  if (id === "wordle") return 6;
+  if (id === "trivia") return triviaView().length;
+  if (id === "two-truths") return twoTruthsView().length;
+  if (id === "travel") return travelView().length;
+  return 4;
+}
+
 // --- Connections (separate grid per language) ---
 export interface ConnGroup {
   name: string;

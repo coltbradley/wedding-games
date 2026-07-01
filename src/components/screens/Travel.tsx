@@ -5,6 +5,7 @@ import { useLang } from "../app/LangContext";
 import { GameHero } from "../app/chrome";
 import { GAME_META, travelView, tx } from "@/lib/games/view";
 import { C } from "@/lib/design/tokens";
+import { fmt } from "@/lib/strings";
 
 export function Travel() {
   const g = useGame();
@@ -36,19 +37,13 @@ export function Travel() {
   if (answered) {
     const right = picked === item.answer;
     const country = item.answer === "france" ? t.france : t.srilanka;
-    reveal = right
-      ? lang === "fr"
-        ? `Oui — ${country} !`
-        : `Yes — ${country}!`
-      : lang === "fr"
-        ? `C’est ${country}.`
-        : `It’s ${country}.`;
+    reveal = fmt(right ? t.yesCountry : t.itsCountry, { c: country });
   }
 
   return (
     <div
       className="screen"
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      style={{ display: "flex", flexDirection: "column" }}
     >
       <GameHero
         hero={GAME_META.travel.hero}
@@ -78,7 +73,7 @@ export function Travel() {
         <div
           style={{
             font: "500 16px var(--font-sans)",
-            color: "#6E6E6A",
+            color: C.slate,
             textAlign: "center",
             margin: "8px 0 0",
           }}

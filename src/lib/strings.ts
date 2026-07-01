@@ -5,6 +5,11 @@
  */
 export type Lang = "en" | "fr";
 
+/** Tiny template helper: fmt("Bravo, {name}!", { name: "Léa" }). */
+export function fmt(s: string, vars: Record<string, string | number>): string {
+  return s.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
+}
+
 export interface Strings {
   date: string;
   tagline: string;
@@ -73,6 +78,35 @@ export interface Strings {
   signInProblem: string;
   signIn: string;
   thatsMe: string;
+  // unlock schedule
+  comingSoonTitle: string;
+  comingSoonSub: string; // {date}
+  locked: string;
+  played: string;
+  // result cards
+  bravoName: string; // {name}
+  nextTime: string;
+  nicelyPlayed: string;
+  beautifullyDone: string;
+  wellTravelled: string;
+  flawless: string;
+  solvedBang: string;
+  placedRight: string;
+  captionScoreOnly: string;
+  captionScoreFriends: string;
+  yesCountry: string; // {c}
+  itsCountry: string; // {c}
+  // persistence + errors
+  scoreSaved: string;
+  scoreSaving: string;
+  scoreSaveFailed: string;
+  retry: string;
+  rosterFailed: string;
+  boardFailed: string;
+  shareManual: string;
+  // a11y
+  backAria: string;
+  chateauAlt: string;
 }
 
 export const STR: Record<Lang, Strings> = {
@@ -150,6 +184,31 @@ export const STR: Record<Lang, Strings> = {
     signInProblem: "Something went wrong. Try again.",
     signIn: "Let’s go",
     thatsMe: "That’s me — let’s go",
+    comingSoonTitle: "Almost time",
+    comingSoonSub: "The first game opens {date}",
+    locked: "Opens {date}",
+    played: "Played",
+    bravoName: "Bravo, {name}!",
+    nextTime: "Next time!",
+    nicelyPlayed: "Nicely played.",
+    beautifullyDone: "Beautifully done!",
+    wellTravelled: "Well travelled!",
+    flawless: "Flawless!",
+    solvedBang: "Solved!",
+    placedRight: "placed right",
+    captionScoreOnly: "Just the score — no spoilers.",
+    captionScoreFriends: "Spoiler-free — your friends only see the score.",
+    yesCountry: "Yes — {c}!",
+    itsCountry: "It’s {c}.",
+    scoreSaved: "Score saved",
+    scoreSaving: "Saving your score…",
+    scoreSaveFailed: "Your score didn’t save",
+    retry: "Try again",
+    rosterFailed: "Couldn’t load the guest list.",
+    boardFailed: "Couldn’t load the board.",
+    shareManual: "Copy didn’t work — press and hold to copy:",
+    backAria: "Back",
+    chateauAlt: "Watercolour château in Burgundy",
   },
   fr: {
     date: "Mercredi · 5 août · Bourgogne",
@@ -226,5 +285,31 @@ export const STR: Record<Lang, Strings> = {
     signInProblem: "Une erreur s’est produite. Réessaie.",
     signIn: "C’est parti",
     thatsMe: "C’est moi — c’est parti",
+    comingSoonTitle: "Bientôt",
+    comingSoonSub: "Le premier jeu ouvre {date}",
+    locked: "Ouvre {date}",
+    played: "Terminé",
+    bravoName: "Bravo, {name} !",
+    nextTime: "La prochaine fois !",
+    nicelyPlayed: "Beau parcours.",
+    beautifullyDone: "Magnifique !",
+    wellTravelled: "Globe-trotteur !",
+    flawless: "Sans faute !",
+    solvedBang: "Terminé !",
+    placedRight: "bien placés",
+    captionScoreOnly: "Le score — sans spoiler.",
+    captionScoreFriends: "Sans spoiler — tes amis ne voient que le score.",
+    yesCountry: "Oui — {c} !",
+    itsCountry: "C’est {c}.",
+    scoreSaved: "Score enregistré",
+    scoreSaving: "Enregistrement…",
+    scoreSaveFailed: "Ton score n’a pas été enregistré",
+    retry: "Réessayer",
+    rosterFailed: "Impossible de charger la liste des invités.",
+    boardFailed: "Impossible de charger le classement.",
+    shareManual:
+      "La copie n’a pas fonctionné — appuie longuement pour copier :",
+    backAria: "Retour",
+    chateauAlt: "Château bourguignon à l’aquarelle",
   },
 };

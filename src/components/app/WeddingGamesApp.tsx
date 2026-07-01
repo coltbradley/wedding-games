@@ -178,7 +178,6 @@ function Shell() {
             maxWidth: 430,
             width: "100%",
             margin: "0 auto",
-            minHeight: "100vh",
             position: "relative",
             color: C.ink,
             // Mobile scrolls the window, so the paper must NOT be a scroll

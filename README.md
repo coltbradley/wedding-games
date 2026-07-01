@@ -13,7 +13,7 @@ Tap a link → land logged in → play today's game (~2 min) → get a score and
 - **Next.js** (App Router) on **Vercel**
 - **Supabase** (Postgres + Auth; anonymous sign-in behind a name pick)
 - **Tailwind** for mobile-first styling
-- **next-intl** for FR/EN
+- **Lightweight FR/EN toggle** (a React context over one bilingual strings table — no i18n framework)
 - **PWA** (installable, fast on phones)
 
 See `docs/ARCHITECTURE.md` for why, and `docs/DECISIONS.md` for the open calls and the reasoning behind them.
@@ -24,19 +24,20 @@ See `docs/ARCHITECTURE.md` for why, and `docs/DECISIONS.md` for the open calls a
 docs/                Architecture, decisions, scoring, deployment, content format, lessons
 src/
   app/               Next.js App Router (routes, layouts)
-  components/        Shared UI
+  components/        App shell + one component per screen
   content/games/     Bilingual game content (typed, version-controlled — NOT in the DB)
   lib/
-    games/           Game registry + shared game types
-    scoring/         Score normalization, leaderboard, tiebreakers
-    i18n/            Locale handling
-    share/           Wordle-style share-card generation
-    supabase/        DB client + queries
-messages/            UI string translations (en.json, fr.json)
+    games/           Content schemas, unlock schedule, game logic + share cards
+    scoring/         Score normalization + tiebreakers
+    data/            Backend seam (mock client / Supabase client)
+    design/          Colour + shape tokens
+    strings.ts       Bilingual UI copy (FR/EN)
+    supabase/        Browser client
 supabase/
   migrations/        SQL schema
   seed/              Guest-list seed (example only; real list is private)
-public/              PWA manifest + icons
+public/              PWA manifest + icons + watercolour assets
+scripts/             Content check, guest seeding, icon generation
 ```
 
 ## Quickstart (once content + secrets are in place)
@@ -54,4 +55,4 @@ Colt & Valentine own all game content and deliver it finished, in both languages
 
 ## Status
 
-UI complete. The Supabase backend (name-pick sign-in, scoring, live leaderboard) is wired and verified end to end against the live project, and the app is deployed to Vercel at `wedding.cdbradley.com`. Production needs the Supabase env vars set in Vercel to leave mock mode, and the real guest list still has to replace the test list before launch. See **`docs/STATUS.md`** for exactly where things stand and the next actions.
+App and backend are wired end to end and deployed to Vercel at `wedding.cdbradley.com` on the live Supabase project. The daily unlock schedule, score persistence across reloads, and PWA install assets are in place. What remains before launch is swapping the 22 test guests for the real list (`npm run seed:guests -- real.csv --prune`) and the pre-launch checklist. See **`docs/STATUS.md`** for exactly where things stand and the next actions.

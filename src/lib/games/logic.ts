@@ -8,7 +8,7 @@ import {
   wordleView,
   tx,
 } from "./view";
-import { CONN_STYLE } from "../design/tokens";
+import { CONN_STYLE, SQ } from "../design/tokens";
 
 export type CellState = "correct" | "present" | "absent" | "empty";
 
@@ -34,20 +34,19 @@ export function evalRow(guess: string, ans: string): CellState[] {
 }
 
 export function cellColors(st: CellState): [string, string] {
-  if (st === "correct") return ["#8A9A7B", "#fff"];
-  if (st === "present") return ["#D8B871", "#fff"];
-  if (st === "absent") return ["#C4BBA9", "#fff"];
-  return ["#fff", "#2A2D32"];
+  return [SQ[st].bg, SQ[st].fg];
 }
 
 /** Game progress needed to build a share card. Mirrors the hook state. */
 export interface ShareState {
   lastGame: keyof typeof GAME_META;
   guesses: string[];
+  /** Language the wordle was played in — the grid must re-grade against it. */
+  wordleLang?: Lang;
   trivia: number[];
   tt: number[];
   travel: ("france" | "srilanka")[];
-  conn: { solved: { g: number }[]; mistakes: number };
+  conn: { solved: { g: number; revealed?: boolean }[]; mistakes: number };
 }
 
 /** Spoiler-free emoji card that pastes into WhatsApp. Ported from the prototype. */
@@ -57,7 +56,7 @@ export function buildShareText(s: ShareState, lang: Lang): string {
   const title = (g: keyof typeof GAME_META) => tx(GAME_META[g].title, lang);
 
   if (id === "wordle") {
-    const ans = wordleView(lang).answer;
+    const ans = wordleView(s.wordleLang ?? lang).answer;
     const sym = { correct: "🟩", present: "🟨", absent: "⬜" } as const;
     const lines = s.guesses
       .map((g) =>
@@ -92,9 +91,12 @@ export function buildShareText(s: ShareState, lang: Lang): string {
     return `${head} — ${title("travel")} · ${score}/${items.length}\n${m}`;
   }
   if (id === "connections") {
+    // Only groups the player actually found — a failed game shares honestly.
     const sq = ["🟨", "🟩", "🟦", "🟪"];
-    const lines = s.conn.solved.map((sv) => sq[sv.g].repeat(4)).join("\n");
-    return `${head} — ${title("connections")} · ${s.conn.mistakes} ${STR[lang].mistakesWord}\n${lines}`;
+    const found = s.conn.solved.filter((sv) => !sv.revealed);
+    const lines = found.map((sv) => sq[sv.g].repeat(4)).join("\n");
+    const score = `${found.length}/4`;
+    return `${head} — ${title("connections")} · ${score} · ${s.conn.mistakes} ${STR[lang].mistakesWord}${lines ? `\n${lines}` : ""}`;
   }
   return head;
 }

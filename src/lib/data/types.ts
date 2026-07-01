@@ -18,13 +18,28 @@ export interface RosterEntry {
 /**
  * One leaderboard row. `all` is the cumulative total; `byGame` holds the score
  * for each game the guest has played. The UI picks which board to show
- * (all-time, or a single game).
+ * (all-time, or a single game). The elapsed/firstResultAt fields exist for the
+ * deterministic tiebreakers (docs/SCORING.md) — a tie at the reception reveal
+ * must resolve the same way every time.
  */
 export interface LeaderRow {
+  id: string;
   name: string;
   all: number;
-  byGame: Partial<Record<GameId, number>>;
+  gamesPlayed: number;
+  totalElapsedMs: number;
+  firstResultAt: string; // ISO timestamp of their earliest result ("" if none)
+  byGame: Partial<Record<GameId, { score: number; elapsedMs: number }>>;
   me: boolean;
+}
+
+/** A guest's own saved result, for rehydrating played state after a reload. */
+export interface MyResult {
+  gameId: GameId;
+  correctness: number;
+  score: number;
+  elapsedMs: number;
+  detail: Record<string, unknown>;
 }
 
 export type SignInResult =
@@ -46,7 +61,13 @@ export interface DataClient {
   /** Name-pick sign-in: pick a guest, enter the shared event code. */
   signInWithName(guestId: string, eventCode: string): Promise<SignInResult>;
   signOut(): Promise<void>;
-  /** Persist a finished game's result (score computed from the raw result). */
-  submitResult(r: RawResult): Promise<void>;
+  /**
+   * Persist a finished game's result (score computed from the raw result).
+   * Resolves { ok: false } when the write did not land, so the UI can say so
+   * and offer a retry — a result card must never lie about persistence.
+   */
+  submitResult(r: RawResult): Promise<{ ok: boolean }>;
+  /** The signed-in guest's saved results, for rehydration on boot. */
+  getMyResults(): Promise<MyResult[]>;
   getLeaderboard(): Promise<LeaderRow[]>;
 }

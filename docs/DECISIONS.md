@@ -80,9 +80,11 @@ The original email-first analysis follows. Decided after research (see sources a
 
 ---
 
-## 8. i18n: FR/EN, cookie-based locale, no URL prefix
+## 8. i18n: FR/EN, instant client toggle, no URL prefix
 
-**Decision:** `next-intl` carrying both languages with a visible toggle. Locale stored in a cookie (default from the browser's Accept-Language), no `/fr` `/en` URL segment.
+**Decision:** No i18n framework. One bilingual strings table (`src/lib/strings.ts`) behind a React context with a visible EN/FR toggle. The choice persists to localStorage and defaults from the browser language; `<html lang>` follows it. No `/fr` `/en` URL segment.
+
+> The original plan said `next-intl` with a cookie locale. The app turned out to be a single client-rendered screen tree, so a routing-aware i18n framework bought nothing — the context toggle switches instantly with no reload. Language-sensitive game state (the Wordle answer, the Connections grid) is pinned to the language the game started in so a mid-game toggle can't re-grade a board.
 
 **Why:** No URL prefix keeps shared links clean and avoids confusing guests with locale-in-the-link. Not an SEO product, so we lose nothing by skipping localized routing.
 
@@ -90,9 +92,11 @@ The original email-first analysis follows. Decided after research (see sources a
 
 ## 9. Daily unlock on Paris time, catch-up always allowed
 
-**Decision:** One game unlocks per day keyed to Europe/Paris. Past games stay playable for catch-up; future games are locked. Scoring is unaffected by _when_ you play (see #5).
+**Decision:** One game unlocks per day keyed to Europe/Paris. Past games stay playable for catch-up; future games are locked (dimmed rows with their open date; the hub features today's game, or a countdown card before launch). Scoring is unaffected by _when_ you play (see #5).
 
 **Why:** Scarcity creates the shared daily ritual (anticipation), while catch-up keeps late arrivals in the game.
+
+> Dev/preview escape hatch: `NEXT_PUBLIC_UNLOCK_ALL=1` opens every game regardless of date, for testing before launch. Never set it in production.
 
 ---
 

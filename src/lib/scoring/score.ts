@@ -22,27 +22,10 @@ export function scoreResult(raw: RawResult): number {
   return Math.round(correctness + speed);
 }
 
-export interface LeaderboardRow {
-  guestId: string;
-  displayName: string;
-  total: number;
-  gamesPlayed: number;
-  totalElapsedMs: number;
-  firstSeen: string; // ISO; final, stable tiebreaker
-  streak: boolean; // played all 5
-}
+// The deterministic tiebreaker sort (docs/SCORING.md) lives in the
+// Leaderboard screen, where it also covers the per-game boards.
 
-/** Deterministic ordering — guarantees no ties at the reception reveal. See docs/SCORING.md. */
-export function rankLeaderboard(rows: LeaderboardRow[]): LeaderboardRow[] {
-  return [...rows].sort(
-    (a, b) =>
-      b.total - a.total ||
-      b.gamesPlayed - a.gamesPlayed ||
-      a.totalElapsedMs - b.totalElapsedMs ||
-      a.firstSeen.localeCompare(b.firstSeen),
-  );
-}
-
+/** "Played every day" badge, read off the data at the reception reveal. */
 export function isStreak(playedGameIds: GameId[]): boolean {
   return SCHEDULE.every((g) => playedGameIds.includes(g.id));
 }

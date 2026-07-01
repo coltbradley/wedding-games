@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { scoreResult } from "@/lib/scoring/score";
-import type { DataClient, GuestProfile } from "./types";
+import type { GameId } from "@/lib/games/types";
+import type { DataClient, GuestProfile, MyResult } from "./types";
 
 /**
  * Real backend. Name-pick sign-in uses Supabase anonymous auth (so there is an
@@ -96,20 +97,48 @@ export const supabaseClient: DataClient = {
   },
 
   async submitResult(r) {
+    const attempt = async () => {
+      const me = await currentGuest();
+      if (!me) return false;
+      const score = scoreResult(r);
+      const { error } = await sb().from("game_results").upsert(
+        {
+          guest_id: me.id,
+          game_id: r.gameId,
+          correctness: r.correctness,
+          score,
+          elapsed_ms: r.elapsedMs,
+          detail: r.detail,
+        },
+        { onConflict: "guest_id,game_id" },
+      );
+      return !error;
+    };
+    // One silent retry absorbs a flaky phone network; beyond that the UI
+    // shows "didn't save" with a retry button (see docs/LESSONS.md: verify
+    // writes against the database, not the screen).
+    try {
+      if (await attempt()) return { ok: true };
+      return { ok: await attempt() };
+    } catch {
+      return { ok: false };
+    }
+  },
+
+  async getMyResults(): Promise<MyResult[]> {
     const me = await currentGuest();
-    if (!me) return;
-    const score = scoreResult(r);
-    await sb().from("game_results").upsert(
-      {
-        guest_id: me.id,
-        game_id: r.gameId,
-        correctness: r.correctness,
-        score,
-        elapsed_ms: r.elapsedMs,
-        detail: r.detail,
-      },
-      { onConflict: "guest_id,game_id" },
-    );
+    if (!me) return [];
+    const { data } = await sb()
+      .from("game_results")
+      .select("game_id, correctness, score, elapsed_ms, detail")
+      .eq("guest_id", me.id);
+    return (data ?? []).map((r) => ({
+      gameId: r.game_id as GameId,
+      correctness: r.correctness,
+      score: r.score,
+      elapsedMs: r.elapsed_ms,
+      detail: (r.detail ?? {}) as Record<string, unknown>,
+    }));
   },
 
   async getLeaderboard() {
@@ -117,28 +146,43 @@ export const supabaseClient: DataClient = {
     const me = await currentGuest();
     const [{ data: guests }, { data: results }] = await Promise.all([
       supabase.from("guests").select("id, display_name"),
-      supabase.from("game_results").select("guest_id, game_id, score"),
+      supabase
+        .from("game_results")
+        .select("guest_id, game_id, score, elapsed_ms, created_at"),
     ]);
-    const byGuest = new Map<
-      string,
-      { name: string; all: number; byGame: Record<string, number> }
-    >();
+    interface Agg {
+      name: string;
+      all: number;
+      gamesPlayed: number;
+      totalElapsedMs: number;
+      firstResultAt: string;
+      byGame: Record<string, { score: number; elapsedMs: number }>;
+    }
+    const byGuest = new Map<string, Agg>();
     (guests ?? []).forEach((g) =>
-      byGuest.set(g.id, { name: g.display_name, all: 0, byGame: {} }),
+      byGuest.set(g.id, {
+        name: g.display_name,
+        all: 0,
+        gamesPlayed: 0,
+        totalElapsedMs: 0,
+        firstResultAt: "",
+        byGame: {},
+      }),
     );
     (results ?? []).forEach((r) => {
       const e = byGuest.get(r.guest_id);
       if (!e) return;
       e.all += r.score;
-      e.byGame[r.game_id] = (e.byGame[r.game_id] ?? 0) + r.score;
+      e.gamesPlayed += 1;
+      e.totalElapsedMs += r.elapsed_ms;
+      if (!e.firstResultAt || r.created_at < e.firstResultAt)
+        e.firstResultAt = r.created_at;
+      e.byGame[r.game_id] = { score: r.score, elapsedMs: r.elapsed_ms };
     });
+    // A guest who played but scored 0 still belongs on the board — filter on
+    // participation, not points.
     return [...byGuest.entries()]
-      .filter(([, e]) => e.all > 0)
-      .map(([id, e]) => ({
-        name: e.name,
-        all: e.all,
-        byGame: e.byGame,
-        me: id === me?.id,
-      }));
+      .filter(([, e]) => e.gamesPlayed > 0)
+      .map(([id, e]) => ({ id, ...e, me: id === me?.id }));
   },
 };

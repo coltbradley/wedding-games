@@ -1,17 +1,11 @@
 "use client";
 
-import { useGame, GAME_ORDER, TODAY_DAY } from "./game";
+import { useGame, GAME_ORDER } from "./game";
 import { useLang } from "./LangContext";
-import { GAME_META, tx } from "@/lib/games/view";
+import { GAME_META, gameTotal, tx } from "@/lib/games/view";
+import { unlockDateLabel } from "@/lib/games/registry";
 import { C } from "@/lib/design/tokens";
-
-const TOTAL: Record<string, number> = {
-  wordle: 6,
-  trivia: 6,
-  "two-truths": 5,
-  travel: 10,
-  connections: 4,
-};
+import { fmt } from "@/lib/strings";
 
 /** The five-day schedule, shown in the hub (full) and the desktop rail (compact). */
 export function ScheduleList({ compact = false }: { compact?: boolean }) {
@@ -30,6 +24,7 @@ export function ScheduleList({ compact = false }: { compact?: boolean }) {
         const meta = GAME_META[id];
         const title = tx(meta.title, lang);
         const done = g.s.done[id];
+        const locked = meta.day > g.s.unlockedDay;
 
         let bg: string = "#fff";
         let border: string = "1px solid rgba(110,44,62,.10)";
@@ -42,6 +37,7 @@ export function ScheduleList({ compact = false }: { compact?: boolean }) {
         let subColor: string = C.taupe;
         let chev: string = "#C8A86E";
         let arrow: string = "→";
+        let opacity = 1;
 
         if (done != null) {
           bg = "#fff";
@@ -52,19 +48,25 @@ export function ScheduleList({ compact = false }: { compact?: boolean }) {
           icon = "✓";
           titleColor = C.ink;
           subColor = C.sage;
-          chev = "#A8A49A";
+          chev = C.stone;
           arrow = "↺";
           if (id === "wordle")
-            sub =
-              done === "X"
-                ? lang === "fr"
-                  ? "Terminé"
-                  : "Played"
-                : `${t.solvedIn} ${done}`;
+            sub = done === "X" ? t.played : `${t.solvedIn} ${done}`;
           else if (id === "connections")
-            sub = `${done}/4 · ${t.dayWord} ${meta.day}`;
-          else sub = `${done}/${TOTAL[id]} ${t.rightWord}`;
-        } else if (meta.day === TODAY_DAY) {
+            sub = `${done}/${gameTotal(id)} · ${t.dayWord} ${meta.day}`;
+          else sub = `${done}/${gameTotal(id)} ${t.rightWord}`;
+        } else if (locked) {
+          shadow = "none";
+          iconBg = C.bg;
+          iconFg = C.stone;
+          titleColor = C.stone;
+          sub = fmt(t.locked, { date: unlockDateLabel(meta.day, lang) });
+          subColor = C.stone;
+          chev = "transparent";
+          arrow = "";
+          icon = "";
+          opacity = 0.78;
+        } else if (meta.day === g.s.unlockedDay) {
           bg = C.wine;
           border = `1.5px solid ${C.wine}`;
           shadow = "0 6px 18px rgba(110,44,62,.16)";
@@ -83,6 +85,8 @@ export function ScheduleList({ compact = false }: { compact?: boolean }) {
           <button
             key={id}
             onClick={() => g.openGame(id)}
+            disabled={locked}
+            aria-disabled={locked}
             style={{
               display: "flex",
               alignItems: "center",
@@ -94,6 +98,8 @@ export function ScheduleList({ compact = false }: { compact?: boolean }) {
               borderRadius: compact ? 14 : 16,
               padding,
               boxShadow: shadow,
+              opacity,
+              cursor: locked ? "default" : "pointer",
             }}
           >
             <div
@@ -110,7 +116,23 @@ export function ScheduleList({ compact = false }: { compact?: boolean }) {
                 font: `600 ${compact ? 14 : 16}px var(--font-serif)`,
               }}
             >
-              {icon}
+              {locked ? (
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="4" y="11" width="16" height="10" rx="2.5" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg>
+              ) : (
+                icon
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
